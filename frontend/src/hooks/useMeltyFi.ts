@@ -83,13 +83,60 @@ function parseWonkaBar(obj: SuiObjectResponse): WonkaBar | null {
     }
 }
 
+// NEW: Helper function to fetch NFT details from object ID
+async function fetchNFTDetails(suiClient: any, nftId: string) {
+    try {
+        const nftObject = await suiClient.getObject({
+            id: nftId,
+            options: {
+                showContent: true,
+                showDisplay: true,
+                showType: true,
+            }
+        });
+
+        if (!nftObject.data) {
+            return {
+                id: nftId,
+                name: 'Unknown NFT',
+                imageUrl: '/placeholder-nft.png',
+                collection: 'Unknown'
+            };
+        }
+
+        const display = nftObject.data.display?.data;
+        const content = nftObject.data.content as any;
+
+        const name = display?.name || content?.fields?.name || 'Unknown NFT';
+        const imageUrl = display?.image_url || content?.fields?.image_url || display?.url || content?.fields?.url || '';
+        const type = nftObject.data.type || '';
+        const collection = type.split('::').slice(0, 2).join('::') || 'Unknown';
+
+        return {
+            id: nftId,
+            name: String(name),
+            imageUrl: imageUrl || '/placeholder-nft.png',
+            collection,
+            type
+        };
+    } catch (error) {
+        console.error('Error fetching NFT details:', error);
+        return {
+            id: nftId,
+            name: 'Unknown NFT',
+            imageUrl: '/placeholder-nft.png',
+            collection: 'Unknown'
+        };
+    }
+}
+
 export function useMeltyFi() {
     const currentAccount = useCurrentAccount();
     const suiClient = useSuiClient();
     const queryClient = useQueryClient();
     const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
-    // Fetch all lotteries
+    // Fetch all lotteries - UPDATED WITH NFT IMAGE FIX
     const { data: lotteries = [], isLoading: isLoadingLotteries } = useQuery({
         queryKey: ['lotteries'],
         queryFn: async () => {
@@ -108,6 +155,16 @@ export function useMeltyFi() {
                     try {
                         const parsedJson = event.parsedJson as any;
                         if (parsedJson?.lottery_id) {
+                            // Fetch the actual NFT details using the nft_id from the event
+                            const nftDetails = parsedJson.nft_id
+                                ? await fetchNFTDetails(suiClient, parsedJson.nft_id)
+                                : {
+                                    id: 'nft_placeholder',
+                                    name: 'Collateral NFT',
+                                    imageUrl: '/placeholder-nft.png',
+                                    collection: 'Unknown'
+                                };
+
                             return {
                                 id: `lottery_${parsedJson.lottery_id}`,
                                 lotteryId: parsedJson.lottery_id?.toString() || '0',
@@ -119,12 +176,7 @@ export function useMeltyFi() {
                                 maxSupply: parsedJson.max_supply?.toString() || '0',
                                 soldCount: '0',
                                 totalRaised: '0',
-                                collateralNft: {
-                                    id: 'nft_placeholder',
-                                    name: 'Collateral NFT',
-                                    imageUrl: '/placeholder-nft.png',
-                                    collection: 'Unknown'
-                                },
+                                collateralNft: nftDetails,
                                 participants: 0
                             } as Lottery;
                         }
@@ -269,126 +321,40 @@ export function useMeltyFi() {
                 throw new Error('Contract addresses not configured. Please check your environment variables.');
             }
 
-            try {
-                // First, get the NFT object to determine its type
-                console.log('🔍 Fetching NFT object...');
-                const nftObject = await suiClient.getObject({
-                    id: nftId,
-                    options: { showContent: true, showType: true, showOwner: true }
-                });
+            const tx = new Transaction();
 
-                console.log('📦 NFT Object:', nftObject);
+            console.log('📝 Building transaction...');
 
-                if (!nftObject.data?.type) {
-                    console.error('❌ Could not determine NFT type');
-                    throw new Error('Could not determine NFT type');
-                }
+            tx.moveCall({
+                target: `${MELTYFI_PACKAGE_ID}::core::create_lottery`,
+                arguments: [
+                    tx.object(PROTOCOL_OBJECT_ID),
+                    tx.object(nftId),
+                    tx.pure.u64(expirationDate),
+                    tx.pure.u64(wonkaBarPrice),
+                    tx.pure.u64(maxSupply),
+                    tx.object('0x6'), // Clock object
+                ],
+            });
 
-                const nftType = nftObject.data.type;
-                console.log('🎯 NFT Type:', nftType);
+            console.log('✍️ Signing and executing transaction...');
+            const result = await signAndExecuteTransaction({
+                transaction: tx
+            });
 
-                // Check NFT ownership
-                const owner = nftObject.data.owner;
-                console.log('👤 NFT Owner:', owner);
-
-                if (owner && 'AddressOwner' in owner && owner.AddressOwner !== currentAccount.address) {
-                    console.error('❌ NFT not owned by current account');
-                    throw new Error('You do not own this NFT');
-                }
-
-                console.log('🔧 Creating transaction...');
-                const tx = new Transaction();
-
-                // Set gas budget explicitly
-                tx.setGasBudget(100_000_000); // Increase to 0.1 SUI
-
-                // Validate parameters
-                const expirationDateNum = Number(expirationDate);
-                const wonkaBarPriceNum = Number(wonkaBarPrice);
-                const maxSupplyNum = Number(maxSupply);
-
-                console.log('📊 Parsed parameters:', {
-                    expirationDateNum,
-                    wonkaBarPriceNum,
-                    maxSupplyNum
-                });
-
-                if (expirationDateNum <= Date.now()) {
-                    throw new Error('Expiration date must be in the future');
-                }
-
-                if (wonkaBarPriceNum <= 0) {
-                    throw new Error('WonkaBar price must be greater than 0');
-                }
-
-                if (maxSupplyNum <= 0) {
-                    throw new Error('Max supply must be greater than 0');
-                }
-
-                // Call create_lottery function with the correct type argument
-                console.log('📝 Adding moveCall to transaction...');
-                tx.moveCall({
-                    target: `${MELTYFI_PACKAGE_ID}::core::create_lottery`,
-                    arguments: [
-                        tx.object(PROTOCOL_OBJECT_ID),         // protocol: &mut Protocol
-                        tx.object(nftId),                      // nft: T (transferred to contract)
-                        tx.pure.u64(expirationDateNum),       // expiration_date: u64
-                        tx.pure.u64(wonkaBarPriceNum),        // wonka_price: u64
-                        tx.pure.u64(maxSupplyNum),            // max_supply: u64
-                        tx.object('0x6'),                     // clock: &Clock
-                    ],
-                    typeArguments: [nftType], // Specify the NFT type
-                });
-
-                console.log('✅ Transaction prepared successfully:', {
-                    target: `${MELTYFI_PACKAGE_ID}::core::create_lottery`,
-                    nftId,
-                    nftType,
-                    expirationDate: expirationDateNum,
-                    wonkaBarPrice: wonkaBarPriceNum,
-                    maxSupply: maxSupplyNum,
-                    protocolId: PROTOCOL_OBJECT_ID,
-                    gasBudget: 100_000_000
-                });
-
-                console.log('🔐 Requesting signature from wallet...');
-                const result = await signAndExecuteTransaction({
-                    transaction: tx
-                });
-
-                console.log('✅ Transaction completed:', result);
-                return result;
-
-            } catch (error) {
-                console.error('💥 Transaction failed:', error);
-                if (error instanceof Error) {
-                    console.error('Error details:', {
-                        message: error.message,
-                        stack: error.stack,
-                        name: error.name
-                    });
-                } else {
-                    console.error('Error details:', error);
-                }
-                throw error;
-            }
+            console.log('✅ Transaction result:', result);
+            return result;
         },
-        onSuccess: (result) => {
-            console.log('🎉 Lottery created successfully:', result);
+        onSuccess: () => {
+            console.log('🎉 Lottery created successfully!');
             queryClient.invalidateQueries({ queryKey: ['lotteries'] });
-            queryClient.invalidateQueries({ queryKey: ['suiBalance'] });
             toast.success('Lottery created successfully!');
         },
-        onError: (error) => {
-            console.error('🚨 createLottery mutation failed:', error);
+        onError: (error: any) => {
+            console.error('❌ Error creating lottery:', error);
 
-            // More specific error messages
-            if (error.message.includes('not configured')) {
-                toast.error('Contract not configured. Please check deployment.');
-            } else if (error.message.includes('Wallet not connected')) {
-                toast.error('Please connect your wallet first.');
-            } else if (error.message.includes('Could not determine NFT type')) {
-                toast.error('Invalid NFT selected. Please try a different NFT.');
+            if (error.message.includes('object does not exist')) {
+                toast.error('NFT not found or inaccessible. Please try a different NFT.');
             } else if (error.message.includes('do not own')) {
                 toast.error('You do not own this NFT.');
             } else if (error.message.includes('Expiration date')) {
@@ -402,6 +368,7 @@ export function useMeltyFi() {
             }
         },
     });
+
     // Buy WonkaBars mutation
     const { mutateAsync: buyWonkaBars, isPending: isBuyingWonkaBars } = useMutation({
         mutationFn: async ({
@@ -526,6 +493,8 @@ export function useMeltyFi() {
         // Data
         lotteries,
         userWonkaBars,
+        chocoChipBalance,
+        suiBalance,
         userStats,
 
         // Loading states

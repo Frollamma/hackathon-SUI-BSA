@@ -1,5 +1,4 @@
 'use client';
-
 import { getExplorerUrl } from '@/constants/contracts';
 import { useMeltyFi } from '@/hooks/useMeltyFi';
 import { useCurrentAccount } from '@mysten/dapp-kit';
@@ -21,6 +20,7 @@ interface LotteryCardProps {
 
 function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: LotteryCardProps) {
     const [quantity, setQuantity] = useState(1);
+    const [imageError, setImageError] = useState(false);
 
     const wonkaBarPrice = parseInt(lottery.wonkaBarPrice);
     const totalCost = (wonkaBarPrice * quantity).toString();
@@ -34,16 +34,23 @@ function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: Lottery
     const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
     const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
+    // Check if we have a valid image URL
+    const hasValidImage = lottery.collateralNft?.imageUrl &&
+        lottery.collateralNft.imageUrl !== '/placeholder-nft.png' &&
+        !imageError;
+
     return (
         <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden hover:bg-white/10 transition-all duration-300">
             {/* NFT Image */}
             <div className="relative h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                {lottery.collateralNft.imageUrl !== '/placeholder-nft.png' ? (
+                {hasValidImage ? (
                     <Image
                         src={lottery.collateralNft.imageUrl}
-                        alt={lottery.collateralNft.name}
+                        alt={lottery.collateralNft?.name || 'NFT'}
                         fill
                         className="object-cover"
+                        onError={() => setImageError(true)}
+                        unoptimized
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -78,8 +85,10 @@ function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: Lottery
             <div className="p-6">
                 {/* Header */}
                 <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-white mb-1">{lottery.collateralNft.name}</h3>
-                    {lottery.collateralNft.collection && (
+                    <h3 className="text-lg font-semibold text-white mb-1">
+                        {lottery.collateralNft?.name || 'Unknown NFT'}
+                    </h3>
+                    {lottery.collateralNft?.collection && (
                         <p className="text-sm text-white/60">{lottery.collateralNft.collection}</p>
                     )}
                 </div>
@@ -101,80 +110,56 @@ function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: Lottery
                     <div>
                         <span className="text-xs text-white/60">Time Left</span>
                         <p className="text-sm font-medium text-white">
-                            {isExpired ? 'Expired' : `${daysLeft}d ${hoursLeft}h`}
+                            {isExpired ? (
+                                'Expired'
+                            ) : daysLeft > 0 ? (
+                                `${daysLeft}d ${hoursLeft}h`
+                            ) : hoursLeft > 0 ? (
+                                `${hoursLeft}h`
+                            ) : (
+                                '< 1h'
+                            )}
                         </p>
                     </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="mb-4">
-                    <div className="flex justify-between text-xs text-white/60 mb-2">
-                        <span>Progress</span>
-                        <span>{Math.round((parseInt(lottery.soldCount) / parseInt(lottery.maxSupply)) * 100)}%</span>
-                    </div>
-                    <div className="w-full bg-white/10 rounded-full h-2">
-                        <div
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${(parseInt(lottery.soldCount) / parseInt(lottery.maxSupply)) * 100}%` }}
-                        />
-                    </div>
-                </div>
-
                 {/* Purchase Section */}
-                {canPurchase ? (
-                    <div className="space-y-3">
+                {canPurchase && (
+                    <div className="space-y-3 pt-4 border-t border-white/10">
                         <div className="flex items-center gap-2">
-                            <label htmlFor={`quantity-${lottery.id}`} className="text-sm text-white/80">
-                                Quantity:
-                            </label>
                             <input
-                                id={`quantity-${lottery.id}`}
                                 type="number"
                                 min="1"
                                 max={parseInt(lottery.maxSupply) - parseInt(lottery.soldCount)}
                                 value={quantity}
                                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                className="w-20 px-2 py-1 bg-white/10 border border-white/20 rounded text-white text-sm"
+                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500"
+                                placeholder="Quantity"
                             />
+                            <div className="text-sm text-white/60">
+                                Total: {formatSuiAmount(totalCost)} SUI
+                            </div>
                         </div>
-
-                        <div className="text-sm text-white/60">
-                            Total: {formatSuiAmount(totalCost)} SUI
-                        </div>
-
                         <button
                             onClick={() => onBuyWonkaBars(lottery.id, quantity, totalCost)}
-                            disabled={isBuying}
-                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                            disabled={isBuying || !canPurchase}
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors"
                         >
-                            {isBuying ? 'Purchasing...' : `Buy ${quantity} WonkaBar${quantity > 1 ? 's' : ''}`}
+                            {isBuying ? 'Processing...' : 'Buy WonkaBars'}
                         </button>
-                    </div>
-                ) : (
-                    <div className="text-center py-3">
-                        {!isConnected ? (
-                            <p className="text-sm text-white/60">Connect wallet to participate</p>
-                        ) : isExpired ? (
-                            <p className="text-sm text-red-400">Lottery has expired</p>
-                        ) : isSoldOut ? (
-                            <p className="text-sm text-yellow-400">All WonkaBars sold</p>
-                        ) : (
-                            <p className="text-sm text-white/60">Lottery not active</p>
-                        )}
                     </div>
                 )}
 
-                {/* Explorer Link */}
-                <div className="mt-3 pt-3 border-t border-white/10">
-                    <a
-                        href={getExplorerUrl('object', lottery.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
-                    >
-                        View on Explorer <ExternalLink className="w-3 h-3" />
-                    </a>
-                </div>
+                {/* View on Explorer */}
+                <a
+                    href={getExplorerUrl('object', lottery.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center justify-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+                >
+                    View on Explorer
+                    <ExternalLink className="w-4 h-4" />
+                </a>
             </div>
         </div>
     );
@@ -182,141 +167,80 @@ function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: Lottery
 
 export default function LotteriesPage() {
     const currentAccount = useCurrentAccount();
-    const {
-        lotteries,
-        buyWonkaBars,
-        isBuyingWonkaBars,
-        isLoadingLotteries
-    } = useMeltyFi();
+    const { lotteries, isLoadingLotteries, buyWonkaBars, isBuyingWonkaBars } = useMeltyFi();
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [filterState, setFilterState] = useState<'all' | 'active' | 'ending-soon'>('all');
-    const [sortBy, setSortBy] = useState<'newest' | 'ending-soon' | 'price-low' | 'price-high'>('newest');
+    const [filterState, setFilterState] = useState<'all' | 'active' | 'expired' | 'sold-out'>('all');
 
     const handleBuyWonkaBars = async (lotteryId: string, quantity: number, totalCost: string) => {
         try {
-            await buyWonkaBars({ lotteryId, quantity, payment: totalCost });
+            // TODO: Implement proper payment coin selection
+            await buyWonkaBars({
+                lotteryId,
+                quantity,
+                payment: 'payment_coin_id', // This needs to be implemented
+            });
         } catch (error) {
-            console.error('Failed to buy WonkaBars:', error);
+            console.error('Error buying WonkaBars:', error);
         }
     };
 
-    // Filter and sort lotteries
-    const filteredLotteries = lotteries
-        .filter(lottery => {
-            // Search filter
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
-                return (
-                    lottery.collateralNft.name.toLowerCase().includes(query) ||
-                    lottery.collateralNft.collection?.toLowerCase().includes(query) ||
-                    lottery.lotteryId.includes(query)
-                );
-            }
-            return true;
-        })
-        .filter(lottery => {
-            // State filter
-            if (filterState === 'active') {
-                return lottery.state === 'ACTIVE' && Date.now() < lottery.expirationDate;
-            }
-            if (filterState === 'ending-soon') {
-                const timeLeft = lottery.expirationDate - Date.now();
-                return lottery.state === 'ACTIVE' && timeLeft < 24 * 60 * 60 * 1000; // Less than 24 hours
-            }
-            return true;
-        })
-        .sort((a, b) => {
-            // Sort logic
-            switch (sortBy) {
-                case 'newest':
-                    return parseInt(b.lotteryId) - parseInt(a.lotteryId);
-                case 'ending-soon':
-                    return a.expirationDate - b.expirationDate;
-                case 'price-low':
-                    return parseInt(a.wonkaBarPrice) - parseInt(b.wonkaBarPrice);
-                case 'price-high':
-                    return parseInt(b.wonkaBarPrice) - parseInt(a.wonkaBarPrice);
-                default:
-                    return 0;
-            }
-        });
+    // Filter lotteries based on search and state
+    const filteredLotteries = lotteries.filter((lottery) => {
+        const matchesSearch = lottery.collateralNft?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lottery.collateralNft?.collection?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const activeLotteriesCount = lotteries.filter(l => l.state === 'ACTIVE' && Date.now() < l.expirationDate).length;
-    const endingSoonCount = lotteries.filter(l => {
-        const timeLeft = l.expirationDate - Date.now();
-        return l.state === 'ACTIVE' && timeLeft < 24 * 60 * 60 * 1000;
-    }).length;
+        const now = Date.now();
+        const isExpired = now > lottery.expirationDate;
+        const isSoldOut = parseInt(lottery.soldCount) >= parseInt(lottery.maxSupply);
+
+        const matchesFilter =
+            filterState === 'all' ||
+            (filterState === 'active' && lottery.state === 'ACTIVE' && !isExpired && !isSoldOut) ||
+            (filterState === 'expired' && isExpired) ||
+            (filterState === 'sold-out' && isSoldOut);
+
+        return matchesSearch && matchesFilter;
+    });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-            {/* Background Elements */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-purple-500/10 via-transparent to-transparent" />
-                <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-blue-500/10 via-transparent to-transparent" />
-            </div>
-
-            <div className="relative z-10 container mx-auto px-6 py-12">
+        <div className="min-h-screen px-6 py-12">
+            <div className="container mx-auto max-w-7xl">
                 {/* Header */}
                 <div className="mb-12">
-                    <h1 className="text-4xl font-bold text-white mb-4">Active Lotteries</h1>
-                    <p className="text-white/60 text-lg">
-                        Discover amazing NFTs, purchase WonkaBars, and win big while earning ChocoChips!
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                        Explore <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Lotteries</span>
+                    </h1>
+                    <p className="text-xl text-white/60">
+                        Browse active lotteries and purchase WonkaBars to win NFTs
                     </p>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-                        <div className="text-3xl font-bold text-white mb-2">{lotteries.length}</div>
-                        <div className="text-white/60">Total Lotteries</div>
-                    </div>
-                    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-                        <div className="text-3xl font-bold text-green-400 mb-2">{activeLotteriesCount}</div>
-                        <div className="text-white/60">Active Now</div>
-                    </div>
-                    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-                        <div className="text-3xl font-bold text-yellow-400 mb-2">{endingSoonCount}</div>
-                        <div className="text-white/60">Ending Soon</div>
-                    </div>
-                </div>
-
-                {/* Filters and Search */}
-                <div className="mb-8 space-y-4 md:space-y-0 md:flex md:items-center md:justify-between">
-                    {/* Search */}
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+                {/* Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                         <input
                             type="text"
                             placeholder="Search lotteries..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-purple-500 transition-colors"
+                            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-purple-500"
                         />
                     </div>
-
-                    {/* Filters */}
-                    <div className="flex items-center gap-4">
-                        <select
-                            value={filterState}
-                            onChange={(e) => setFilterState(e.target.value as any)}
-                            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                        >
-                            <option value="all">All Lotteries</option>
-                            <option value="active">Active Only</option>
-                            <option value="ending-soon">Ending Soon</option>
-                        </select>
-
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as any)}
-                            className="px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
-                        >
-                            <option value="newest">Newest First</option>
-                            <option value="ending-soon">Ending Soon</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                        </select>
+                    <div className="flex gap-2">
+                        {(['all', 'active', 'expired', 'sold-out'] as const).map((state) => (
+                            <button
+                                key={state}
+                                onClick={() => setFilterState(state)}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors capitalize ${filterState === state
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-white/5 text-white/60 hover:bg-white/10'
+                                    }`}
+                            >
+                                {state.replace('-', ' ')}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -328,7 +252,7 @@ export default function LotteriesPage() {
                     </div>
                 )}
 
-                {/* No Results */}
+                {/* Empty State */}
                 {!isLoadingLotteries && filteredLotteries.length === 0 && (
                     <div className="text-center py-12">
                         <Ticket className="w-16 h-16 text-white/40 mx-auto mb-4" />

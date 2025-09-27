@@ -1,68 +1,139 @@
 'use client';
 
-import { getExplorerUrl } from '@/constants/contracts';
 import { useMeltyFi } from '@/hooks/useMeltyFi';
-import { shortenAddress } from '@/lib/utils';
-import { useCurrentAccount, useSuiClientQuery } from '@mysten/dapp-kit';
+import { useCurrentAccount } from '@mysten/dapp-kit';
 import {
-    AlertCircle,
-    CheckCircle,
+    Check,
     Clock,
-    Coins,
     Copy,
-    ExternalLink,
     Ticket,
     Trophy,
     User,
     Wallet
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-function formatSuiAmount(amount: string | bigint) {
-    const amountNum = typeof amount === 'string' ? BigInt(amount) : amount;
-    return (Number(amountNum) / 1_000_000_000).toFixed(4);
-}
+// Separate component for lottery card to properly use hooks
+function LotteryCard({ lottery, formatSuiAmount, formatTimeLeft }: {
+    lottery: any;
+    formatSuiAmount: (amount: string | number) => string;
+    formatTimeLeft: (expirationDate: number) => string;
+}) {
+    const [imageError, setImageError] = useState(false);
 
-function formatChocoChips(amount: string) {
-    const amountNum = BigInt(amount);
-    return (Number(amountNum) / 1_000_000_000).toFixed(2);
+    const hasValidImage = lottery.collateralNft?.imageUrl &&
+        lottery.collateralNft.imageUrl !== '/placeholder-nft.png' &&
+        !imageError;
+
+    return (
+        <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden hover:bg-white/10 transition-colors">
+            {/* NFT Image */}
+            <div className="relative h-48 bg-gradient-to-br from-purple-500/20 to-pink-500/20">
+                {hasValidImage ? (
+                    <Image
+                        src={lottery.collateralNft.imageUrl}
+                        alt={lottery.collateralNft?.name || 'NFT'}
+                        fill
+                        className="object-cover"
+                        onError={() => setImageError(true)}
+                        unoptimized
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <Ticket className="w-8 h-8 text-white" />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${lottery.state === 'ACTIVE'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : lottery.state === 'CONCLUDED'
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}>
+                        {lottery.state}
+                    </div>
+                    <span className="text-sm text-white/60">#{lottery.lotteryId}</span>
+                </div>
+
+                <div className="mb-4">
+                    <h3 className="font-semibold text-white mb-2">
+                        {lottery.collateralNft?.name || 'Unknown NFT'}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span className="text-white/60">Sold</span>
+                            <p className="text-white font-medium">
+                                {lottery.soldCount}/{lottery.maxSupply}
+                            </p>
+                        </div>
+                        <div>
+                            <span className="text-white/60">Price</span>
+                            <p className="text-white font-medium">
+                                {formatSuiAmount(lottery.wonkaBarPrice)} SUI
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4 text-white/60" />
+                    <span className="text-white/60">
+                        {lottery.state === 'ACTIVE'
+                            ? formatTimeLeft(lottery.expirationDate)
+                            : 'Ended'
+                        }
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default function ProfilePage() {
     const currentAccount = useCurrentAccount();
-    const { data: balance } = useSuiClientQuery(
-        'getBalance',
-        { owner: currentAccount?.address || '' },
-        { enabled: !!currentAccount?.address }
-    );
-    const {
-        userStats,
-        lotteries,
-        userWonkaBars,
-        isLoadingLotteries,
-        isLoadingWonkaBars
-    } = useMeltyFi();
-
+    const { lotteries, userStats, isLoadingLotteries } = useMeltyFi();
     const [copiedAddress, setCopiedAddress] = useState(false);
 
-    const copyAddress = async () => {
+    const formatSuiAmount = (amount: string | number) => (Number(amount) / 1_000_000_000).toFixed(4);
+
+    const shortenAddress = (address: string) => {
+        return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    };
+
+    const copyAddress = () => {
         if (currentAccount?.address) {
-            await navigator.clipboard.writeText(currentAccount.address);
+            navigator.clipboard.writeText(currentAccount.address);
             setCopiedAddress(true);
             setTimeout(() => setCopiedAddress(false), 2000);
         }
     };
 
+    const formatTimeLeft = (expirationDate: number) => {
+        const timeLeft = expirationDate - Date.now();
+        const daysLeft = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hoursLeft = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+        if (timeLeft <= 0) return 'Expired';
+        if (daysLeft > 0) return `${daysLeft}d ${hoursLeft}h left`;
+        if (hoursLeft > 0) return `${hoursLeft}h left`;
+        return '< 1h left';
+    };
+
     if (!currentAccount) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-                <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center max-w-md">
-                    <Wallet className="w-16 h-16 text-white/40 mx-auto mb-6" />
-                    <h2 className="text-2xl font-bold text-white mb-4">Connect Your Wallet</h2>
-                    <p className="text-white/60 mb-8">
-                        Connect your Sui wallet to access your profile and manage your lotteries.
-                    </p>
+            <div className="min-h-screen flex items-center justify-center px-6">
+                <div className="text-center">
+                    <Wallet className="w-16 h-16 text-white/40 mx-auto mb-4" />
+                    <h2 className="text-2xl font-bold text-white mb-2">
+                        Connect Your Wallet
+                    </h2>
                     <p className="text-sm text-white/40">
                         Make sure you're on Sui Testnet and have some testnet SUI tokens.
                     </p>
@@ -103,72 +174,28 @@ export default function ProfilePage() {
                                         className="h-6 w-6 p-0 hover:bg-white/10 rounded text-white/60 hover:text-white transition-colors"
                                     >
                                         {copiedAddress ? (
-                                            <CheckCircle className="w-4 h-4 text-green-400" />
+                                            <Check className="w-4 h-4" />
                                         ) : (
                                             <Copy className="w-4 h-4" />
                                         )}
                                     </button>
-                                    <a
-                                        href={getExplorerUrl('address', currentAccount.address)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="h-6 w-6 p-0 hover:bg-white/10 rounded text-white/60 hover:text-white transition-colors"
-                                    >
-                                        <ExternalLink className="w-4 h-4" />
-                                    </a>
                                 </div>
                             </div>
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="flex gap-4">
-                            <Link
-                                href="/create"
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
-                            >
-                                Create Lottery
-                            </Link>
-                            <Link
-                                href="/lotteries"
-                                className="border border-white/20 hover:bg-white/10 text-white font-medium px-6 py-3 rounded-lg transition-colors"
-                            >
-                                Browse Lotteries
-                            </Link>
-                        </div>
+                        <Link
+                            href="/create"
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+                        >
+                            Create New Lottery
+                        </Link>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    {/* SUI Balance */}
-                    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <Wallet className="w-8 h-8 text-blue-400" />
-                            <span className="text-sm text-white/60">Balance</span>
-                        </div>
-                        <div className="text-2xl font-bold text-white mb-1">
-                            {formatSuiAmount(balance?.totalBalance || '0')} SUI
-                        </div>
-                        <div className="text-sm text-white/60">
-                            ≈ ${(parseFloat(formatSuiAmount(balance?.totalBalance || '0')) * 0.5).toFixed(2)} USD
-                        </div>
-                    </div>
-
-                    {/* ChocoChip Balance */}
-                    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <Coins className="w-8 h-8 text-yellow-400" />
-                            <span className="text-sm text-white/60">ChocoChips</span>
-                        </div>
-                        <div className="text-2xl font-bold text-white mb-1">
-                            {formatChocoChips(userStats?.chocoChipBalance || '0')}
-                        </div>
-                        <div className="text-sm text-white/60">
-                            Reward tokens earned
-                        </div>
-                    </div>
-
-                    {/* Active Lotteries */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    {/* Lotteries */}
                     <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6">
                         <div className="flex items-center justify-between mb-4">
                             <Trophy className="w-8 h-8 text-purple-400" />
@@ -193,6 +220,20 @@ export default function ProfilePage() {
                         </div>
                         <div className="text-sm text-white/60">
                             Lottery tickets owned
+                        </div>
+                    </div>
+
+                    {/* Balance */}
+                    <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <Wallet className="w-8 h-8 text-blue-400" />
+                            <span className="text-sm text-white/60">Balance</span>
+                        </div>
+                        <div className="text-2xl font-bold text-white mb-1">
+                            {formatSuiAmount(userStats?.suiBalance || '0')}
+                        </div>
+                        <div className="text-sm text-white/60">
+                            SUI
                         </div>
                     </div>
                 </div>
@@ -233,149 +274,16 @@ export default function ProfilePage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {userLotteries.map((lottery) => (
-                                <div
+                                <LotteryCard
                                     key={lottery.id}
-                                    className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 hover:bg-white/10 transition-colors"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${lottery.state === 'ACTIVE'
-                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                            : lottery.state === 'CONCLUDED'
-                                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                            }`}>
-                                            {lottery.state}
-                                        </div>
-                                        <span className="text-sm text-white/60">#{lottery.lotteryId}</span>
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <h3 className="font-semibold text-white mb-2">{lottery.collateralNft.name}</h3>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                                <span className="text-white/60">Sold</span>
-                                                <p className="text-white font-medium">{lottery.soldCount}/{lottery.maxSupply}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-white/60">Price</span>
-                                                <p className="text-white font-medium">{formatSuiAmount(lottery.wonkaBarPrice)} SUI</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-sm">
-                                        <Clock className="w-4 h-4 text-white/60" />
-                                        <span className="text-white/60">
-                                            {lottery.state === 'ACTIVE'
-                                                ? `Expires ${new Date(lottery.expirationDate).toLocaleDateString()}`
-                                                : 'Completed'
-                                            }
-                                        </span>
-                                    </div>
-                                </div>
+                                    lottery={lottery}
+                                    formatSuiAmount={formatSuiAmount}
+                                    formatTimeLeft={formatTimeLeft}
+                                />
                             ))}
                         </div>
                     )}
                 </div>
-
-                {/* My WonkaBars Section */}
-                <div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-white">My WonkaBars</h2>
-                        {userWonkaBars.length > 0 && (
-                            <Link
-                                href="/lotteries"
-                                className="text-purple-400 hover:text-purple-300 text-sm font-medium"
-                            >
-                                Buy More Tickets →
-                            </Link>
-                        )}
-                    </div>
-
-                    {isLoadingWonkaBars ? (
-                        <div className="text-center py-12">
-                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                            <p className="text-white/60 mt-4">Loading your WonkaBars...</p>
-                        </div>
-                    ) : userWonkaBars.length === 0 ? (
-                        <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center">
-                            <Ticket className="w-16 h-16 text-white/40 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-white mb-2">No WonkaBars Yet</h3>
-                            <p className="text-white/60 mb-6">
-                                Purchase WonkaBars from active lotteries to win amazing NFTs and earn ChocoChips.
-                            </p>
-                            <Link
-                                href="/lotteries"
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-3 rounded-lg transition-colors inline-block"
-                            >
-                                Browse Active Lotteries
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {userWonkaBars.map((wonkaBar) => {
-                                const associatedLottery = lotteries.find(l => l.id === wonkaBar.lotteryId);
-                                return (
-                                    <div
-                                        key={wonkaBar.id}
-                                        className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-4 hover:bg-white/10 transition-colors"
-                                    >
-                                        <div className="flex items-center justify-between mb-3">
-                                            <Ticket className="w-6 h-6 text-pink-400" />
-                                            <span className="text-xs text-white/60">
-                                                Qty: {wonkaBar.ticketCount}
-                                            </span>
-                                        </div>
-
-                                        <div className="mb-3">
-                                            <h4 className="font-medium text-white text-sm mb-1">
-                                                {associatedLottery?.collateralNft.name || `Lottery #${wonkaBar.lotteryId.slice(-4)}`}
-                                            </h4>
-                                            <p className="text-xs text-white/60">
-                                                Purchased {new Date(wonkaBar.purchasedAt).toLocaleDateString()}
-                                            </p>
-                                        </div>
-
-                                        {associatedLottery && (
-                                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${associatedLottery.state === 'ACTIVE'
-                                                ? 'bg-green-500/20 text-green-400'
-                                                : associatedLottery.state === 'CONCLUDED'
-                                                    ? 'bg-blue-500/20 text-blue-400'
-                                                    : 'bg-red-500/20 text-red-400'
-                                                }`}>
-                                                {associatedLottery.state}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-
-                {/* Low Balance Warning */}
-                {balance && Number(balance.totalBalance) < 100_000_000 && (
-                    <div className="mt-8 rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
-                        <div className="flex items-center gap-2">
-                            <AlertCircle className="w-5 h-5 text-yellow-400" />
-                            <div>
-                                <h3 className="font-medium text-yellow-200">Low SUI Balance</h3>
-                                <p className="text-sm text-yellow-200/70">
-                                    You have a low SUI balance. Get more testnet SUI from the{' '}
-                                    <a
-                                        href="https://faucet.testnet.sui.io"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="underline hover:text-yellow-100"
-                                    >
-                                        faucet
-                                    </a>
-                                    {' '}to continue using MeltyFi.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );
