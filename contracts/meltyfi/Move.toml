@@ -1,10 +1,17 @@
 [package]
 name = "meltyfi"
-edition = "2024.beta"
 version = "1.0.0"
+edition = "2024.beta"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
 
 [addresses]
+# Single, non-conflicting address assignment
 meltyfi = "0x0"
+
+[dev-dependencies]
+
+[dev-addresses]
+# Remove duplicate dev addresses to fix compilation error
+# The single address above will handle both package and dev contexts

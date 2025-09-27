@@ -1,147 +1,170 @@
-/// ChocoChip - Reward token for MeltyFi Protocol
 module meltyfi::choco_chip {
-    use sui::coin::{Self, Coin, TreasuryCap};
-    use sui::tx_context::{Self, TxContext};
+    use sui::coin;
     use sui::transfer;
+    use sui::tx_context::TxContext;
     use sui::object::{Self, UID};
-    use sui::url;
-    use sui::event;
-    use std::vector;
+    use sui::balance::{Self, Balance};
+    use sui::coin_registry;
     use std::option;
 
-    // ===== Constants =====
-    const MAX_SUPPLY: u64 = 1_000_000_000_000_000_000; // 1B tokens with 9 decimals
-    const DECIMALS: u8 = 9;
+    // ===============================
+    // TYPES & STRUCTS
+    // ===============================
 
-    // ===== Error Codes =====
-    const ENotAuthorized: u64 = 1;
-    const EInvalidAmount: u64 = 2;
-    const ESupplyExceeded: u64 = 3;
-
-    // ===== Types =====
-
+    /// The ChocoChip token type
     public struct CHOCO_CHIP has drop {}
 
+    /// Chocolate Factory for minting ChocoChips
     public struct ChocolateFactory has key {
         id: UID,
-        treasury_cap: TreasuryCap<CHOCO_CHIP>,
         total_supply: u64,
-        authorized_minters: vector<address>,
-        max_supply: u64,
+        mint_cap: coin::TreasuryCap<CHOCO_CHIP>,
     }
 
+    /// Factory Admin capability
     public struct FactoryAdmin has key, store {
         id: UID,
     }
 
-    // ===== Events =====
+    // ===============================
+    // CONSTANTS
+    // ===============================
 
-    public struct ChocolateMinted has copy, drop {
-        recipient: address,
-        amount: u64,
-        minter: address,
-    }
+    /// Error codes
+    const E_NOT_AUTHORIZED: u64 = 1;
+    const E_INSUFFICIENT_FUNDS: u64 = 2;
+    const E_INVALID_AMOUNT: u64 = 3;
 
-    public struct MinterAuthorized has copy, drop {
-        minter: address,
-        authorized_by: address,
-    }
+    /// Token constants
+    const DECIMALS: u8 = 9;
+    const SYMBOL: vector<u8> = b"CHOCO";
+    const NAME: vector<u8> = b"ChocoChip";
+    const DESCRIPTION: vector<u8> = b"MeltyFi governance and reward token - earn by participating in NFT lotteries";
+    const ICON_URL: vector<u8> = b""; // Add your token icon URL here
 
-    // ===== Initialization =====
+    // ===============================
+    // INIT FUNCTION
+    // ===============================
 
-    #[allow(deprecated_usage)]
+    /// Module initializer - creates the token and factory
     fun init(witness: CHOCO_CHIP, ctx: &mut TxContext) {
-        // Use the traditional coin creation method with deprecation suppression
-        let (treasury_cap, metadata) = coin::create_currency(
+        // Use the new recommended function instead of deprecated create_currency
+        let (treasury_cap, metadata) = coin_registry::new_currency_with_otw(
             witness,
             DECIMALS,
-            b"CHOC",
-            b"ChocoChip",
-            b"Reward token for MeltyFi Protocol participants",
-            option::some(url::new_unsafe_from_bytes(b"https://meltyfi.com/choco.png")),
+            SYMBOL,
+            NAME,
+            DESCRIPTION,
+            option::some(ICON_URL),
             ctx
         );
 
-        let admin_address = tx_context::sender(ctx);
-        let mut authorized_minters = vector::empty<address>();
-        vector::push_back(&mut authorized_minters, admin_address);
-
+        // Create the chocolate factory
         let factory = ChocolateFactory {
             id: object::new(ctx),
-            treasury_cap,
             total_supply: 0,
-            authorized_minters,
-            max_supply: MAX_SUPPLY,
+            mint_cap: treasury_cap,
         };
 
+        // Create factory admin capability
         let admin = FactoryAdmin {
             id: object::new(ctx),
         };
 
+        // Make metadata immutable (publicly accessible)
         transfer::public_freeze_object(metadata);
-        transfer::share_object(factory);
-        transfer::transfer(admin, admin_address);
+        
+        // Transfer factory and admin to sender
+        transfer::transfer(factory, tx_context::sender(ctx));
+        transfer::transfer(admin, tx_context::sender(ctx));
     }
 
-    // ===== Public Functions =====
+    // ===============================
+    // PUBLIC FUNCTIONS
+    // ===============================
 
-    /// Mint ChocoChips
+    /// Mint ChocoChips - can only be called by factory owner
     public fun mint(
         factory: &mut ChocolateFactory,
         amount: u64,
         recipient: address,
         ctx: &mut TxContext
-    ): Coin<CHOCO_CHIP> {
-        let minter = tx_context::sender(ctx);
-        assert!(vector::contains(&factory.authorized_minters, &minter), ENotAuthorized);
-        assert!(amount > 0, EInvalidAmount);
-        assert!(factory.total_supply + amount <= factory.max_supply, ESupplyExceeded);
-
-        factory.total_supply = factory.total_supply + amount;
-        let coin = coin::mint(&mut factory.treasury_cap, amount, ctx);
-
-        event::emit(ChocolateMinted {
-            recipient,
-            amount,
-            minter,
-        });
-
-        coin
-    }
-
-    /// Authorize new minter (admin only)
-    public fun authorize_minter(
-        factory: &mut ChocolateFactory,
-        _admin: &FactoryAdmin,
-        new_minter: address,
-        ctx: &mut TxContext
     ) {
-        assert!(!vector::contains(&factory.authorized_minters, &new_minter), ENotAuthorized);
-        vector::push_back(&mut factory.authorized_minters, new_minter);
-
-        event::emit(MinterAuthorized {
-            minter: new_minter,
-            authorized_by: tx_context::sender(ctx),
-        });
+        let coins = coin::mint(&mut factory.mint_cap, amount, ctx);
+        factory.total_supply = factory.total_supply + amount;
+        transfer::public_transfer(coins, recipient);
     }
 
-    // ===== View Functions =====
+    /// Burn ChocoChips
+    public fun burn(factory: &mut ChocolateFactory, coins: coin::Coin<CHOCO_CHIP>) {
+        let amount = coin::value(&coins);
+        coin::burn(&mut factory.mint_cap, coins);
+        factory.total_supply = factory.total_supply - amount;
+    }
 
+    /// Get total supply
     public fun total_supply(factory: &ChocolateFactory): u64 {
         factory.total_supply
     }
 
-    public fun max_supply(factory: &ChocolateFactory): u64 {
-        factory.max_supply
+    /// Get balance of a coin
+    public fun balance(coins: &coin::Coin<CHOCO_CHIP>): u64 {
+        coin::value(coins)
     }
 
-    public fun is_authorized_minter(factory: &ChocolateFactory, minter: address): bool {
-        vector::contains(&factory.authorized_minters, &minter)
+    /// Split coins
+    public fun split(
+        coins: &mut coin::Coin<CHOCO_CHIP>,
+        amount: u64,
+        ctx: &mut TxContext
+    ): coin::Coin<CHOCO_CHIP> {
+        coin::split(coins, amount, ctx)
     }
 
-    #[test_only]
-    public fun init_for_testing(ctx: &mut TxContext) {
-        let witness = CHOCO_CHIP {};
-        init(witness, ctx);
+    /// Join coins
+    public fun join(
+        coin1: &mut coin::Coin<CHOCO_CHIP>,
+        coin2: coin::Coin<CHOCO_CHIP>
+    ) {
+        coin::join(coin1, coin2);
+    }
+
+    // ===============================
+    // ADMIN FUNCTIONS
+    // ===============================
+
+    /// Emergency mint function (admin only)
+    public fun admin_mint(
+        _admin: &FactoryAdmin,
+        factory: &mut ChocolateFactory,
+        amount: u64,
+        recipient: address,
+        ctx: &mut TxContext
+    ) {
+        mint(factory, amount, recipient, ctx);
+    }
+
+    /// Update factory settings (admin only)
+    public fun admin_burn_cap(
+        _admin: &FactoryAdmin,
+        factory: &mut ChocolateFactory,
+        coins: coin::Coin<CHOCO_CHIP>
+    ) {
+        burn(factory, coins);
+    }
+
+    // ===============================
+    // GETTER FUNCTIONS
+    // ===============================
+
+    /// Get factory total supply (view function)
+    public fun get_total_supply(factory: &ChocolateFactory): u64 {
+        total_supply(factory)
+    }
+
+    /// Check if address owns factory admin capability
+    public fun is_admin(factory_admin: &FactoryAdmin): bool {
+        // Simple existence check - in production you might want more sophisticated checks
+        object::uid_to_address(&factory_admin.id) != @0x0
     }
 }
