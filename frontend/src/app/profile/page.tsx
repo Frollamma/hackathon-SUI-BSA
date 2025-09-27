@@ -159,19 +159,6 @@ function MyLotteryCard({ lottery }: { lottery: any }) {
                         </div>
                     </div>
                 )}
-
-                {/* Actions */}
-                <div className="flex space-x-2 pt-2">
-                    <Link
-                        href={getExplorerUrl(lottery.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 bg-white/10 hover:bg-white/20 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1"
-                    >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>View</span>
-                    </Link>
-                </div>
             </div>
         </div>
     );
@@ -286,19 +273,6 @@ function WonkaBarCard({ wonkaBar }: { wonkaBar: any }) {
                         </span>
                     </div>
                 )}
-
-                {/* Actions */}
-                <div className="flex space-x-2">
-                    <Link
-                        href={getExplorerUrl(wonkaBar.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors flex items-center justify-center space-x-1"
-                    >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>View</span>
-                    </Link>
-                </div>
             </div>
         </div>
     );
@@ -476,8 +450,8 @@ export default function ProfilePage() {
                     <button
                         onClick={() => setActiveTab('my-lotteries')}
                         className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'my-lotteries'
-                                ? 'bg-purple-500 text-white'
-                                : 'text-white/60 hover:text-white hover:bg-white/10'
+                            ? 'bg-purple-500 text-white'
+                            : 'text-white/60 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         My Lotteries ({filteredUserLotteries.length})
@@ -485,8 +459,8 @@ export default function ProfilePage() {
                     <button
                         onClick={() => setActiveTab('my-wonkabars')}
                         className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'my-wonkabars'
-                                ? 'bg-purple-500 text-white'
-                                : 'text-white/60 hover:text-white hover:bg-white/10'
+                            ? 'bg-purple-500 text-white'
+                            : 'text-white/60 hover:text-white hover:bg-white/10'
                             }`}
                     >
                         My WonkaBars ({filteredUserWonkaBars.length})
@@ -635,15 +609,6 @@ export default function ProfilePage() {
                         >
                             <Search className="w-4 h-4" />
                             <span>Browse Lotteries</span>
-                        </Link>
-                        <Link
-                            href={getExplorerUrl(currentAccount.address)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-2 bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-3 rounded-lg transition-colors text-sm"
-                        >
-                            <ExternalLink className="w-4 h-4" />
-                            <span>View on Explorer</span>
                         </Link>
                     </div>
                 </div>

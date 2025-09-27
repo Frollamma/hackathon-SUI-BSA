@@ -80,12 +80,12 @@ function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: Lottery
                 {/* Status Badge */}
                 <div className="absolute top-4 left-4">
                     <div className={`px-2 py-1 rounded-full text-xs font-medium ${lottery.state === 'ACTIVE' && !isExpired && !isSoldOut
-                            ? 'bg-green-600/20 text-green-400'
-                            : isExpired || lottery.state === 'CONCLUDED'
-                                ? 'bg-orange-600/20 text-orange-400'
-                                : isSoldOut
-                                    ? 'bg-blue-600/20 text-blue-400'
-                                    : 'bg-gray-600/20 text-gray-400'
+                        ? 'bg-green-600/20 text-green-400'
+                        : isExpired || lottery.state === 'CONCLUDED'
+                            ? 'bg-orange-600/20 text-orange-400'
+                            : isSoldOut
+                                ? 'bg-blue-600/20 text-blue-400'
+                                : 'bg-gray-600/20 text-gray-400'
                         }`}>
                         {lottery.state === 'CONCLUDED' ? 'Concluded' :
                             isExpired ? 'Expired' :
@@ -195,19 +195,6 @@ function LotteryCard({ lottery, onBuyWonkaBars, isBuying, isConnected }: Lottery
                                     lottery.state !== 'ACTIVE' ? 'Lottery not active' : ''}
                     </div>
                 )}
-
-                {/* View Details Link */}
-                <div className="pt-2 border-t border-white/10">
-                    <Link
-                        href={getExplorerUrl(lottery.id)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-1 text-sm text-purple-400 hover:text-purple-300 transition-colors"
-                    >
-                        <span>View on Explorer</span>
-                        <ExternalLink className="w-3 h-3" />
-                    </Link>
-                </div>
             </div>
         </div>
     );
