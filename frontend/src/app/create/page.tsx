@@ -147,24 +147,49 @@ export default function CreatePage() {
         }
 
         try {
-            const priceInMIST = Math.floor(parseFloat(wonkabarPrice) * 1_000_000_000);
+            // Validate inputs
+            const price = parseFloat(wonkabarPrice);
+            const supply = parseInt(maxSupply);
+            const durationDays = parseFloat(duration);
 
-            // FIX: Use parseFloat instead of parseInt to handle decimal days (like 0.00347222 for 5 minutes)
-            const durationInMs = Math.floor(parseFloat(duration) * 24 * 60 * 60 * 1000);
+            if (isNaN(price) || price <= 0) {
+                alert('Please enter a valid WonkaBar price');
+                return;
+            }
+            if (isNaN(supply) || supply <= 0) {
+                alert('Please enter a valid max supply');
+                return;
+            }
+            if (isNaN(durationDays) || durationDays <= 0) {
+                alert('Please select a valid duration');
+                return;
+            }
+
+            console.log('Creating lottery with parameters:', {
+                nftId: selectedNFT.id,
+                wonkaBarPrice: wonkabarPrice, // Pass as SUI string, hook will convert to MIST
+                maxSupply: supply,
+                duration: durationDays
+            });
 
             await createLottery({
                 nftId: selectedNFT.id,
-                wonkaBarPrice: priceInMIST.toString(),
-                maxSupply: maxSupply,
-                expirationDate: Date.now() + durationInMs
+                wonkaBarPrice: wonkabarPrice, // Pass as SUI string (e.g., "0.1")
+                maxSupply: supply, // Pass as number
+                duration: durationDays // Pass as number of days
             });
 
+            // Reset form after successful creation
             setSelectedNFT(null);
             setWonkabarPrice('');
             setMaxSupply('');
             setDuration('');
+
+            alert('Lottery created successfully!');
+
         } catch (error) {
             console.error('Failed to create lottery:', error);
+            alert(`Failed to create lottery: ${typeof error === 'object' && error !== null && 'message' in error ? (error as { message?: string }).message : String(error)}`);
         }
     };
 
