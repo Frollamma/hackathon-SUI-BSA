@@ -3,46 +3,20 @@
 import { useMeltyFi } from '@/hooks/useMeltyFi';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import {
-    AlertCircle,
     Calendar,
-    CheckCircle,
     Clock,
     Coins,
-    ExternalLink,
     Filter,
-    Image as ImageIcon,
     Loader2,
     Plus,
     Search,
-    Target,
-    TrendingUp,
+    Ticket,
     Trophy,
-    Users,
-    Zap
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useState } from "react";
-
-// Types for better type safety
-interface LotteryDisplayData {
-    id: string;
-    lotteryId: string;
-    title: string;
-    collection?: string;
-    image: string;
-    owner: string;
-    expirationDate: Date;
-    wonkaBarPrice: number;
-    wonkaBarsSold: number;
-    wonkaBarsMaxSupply: number;
-    totalRaised: number;
-    status: 'ACTIVE' | 'CANCELLED' | 'CONCLUDED';
-    isExpired: boolean;
-    isSoldOut: boolean;
-    daysLeft: number;
-    progressPercentage: number;
-}
+    Users
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 
 // Helper functions
 function formatSuiAmount(amount: string | bigint): string {
@@ -55,137 +29,240 @@ function getDaysLeft(expirationDate: number): number {
     return Math.max(0, Math.ceil(timeLeft / (1000 * 60 * 60 * 24)));
 }
 
-// Enhanced Lottery Card Component
+// Lottery Display Data Interface
+interface LotteryDisplayData {
+    id: string;
+    lotteryId: string;
+    owner: string;
+    collateralNft: {
+        name?: string;
+        imageUrl?: string;
+        description?: string;
+    };
+    expirationDate: Date;
+    wonkaBarPrice: string;
+    maxSupply: string;
+    soldCount: string;
+    state: string;
+    daysLeft: number;
+    progressPercentage: number;
+    isExpired: boolean;
+    isSoldOut: boolean;
+    status: 'ACTIVE' | 'EXPIRED' | 'CONCLUDED' | 'SOLD_OUT';
+    participants: number;
+}
+
+// Lottery Card Component
 function LotteryCard({ lottery }: { lottery: LotteryDisplayData }) {
     const [imageError, setImageError] = useState(false);
-    const { buyWonkaBars, isBuyingWonkaBars } = useMeltyFi();
+    const [buyAmount, setBuyAmount] = useState(1);
     const currentAccount = useCurrentAccount();
+    const { buyWonkaBars, isBuyingWonkaBars } = useMeltyFi();
 
-    const handleBuyWonkaBars = async (amount: number) => {
-        if (!currentAccount) {
-            alert('Please connect your wallet first');
+    const wonkaBarPrice = parseFloat(formatSuiAmount(lottery.wonkaBarPrice));
+    const totalRaised = wonkaBarPrice * parseInt(lottery.soldCount);
+    const isOwned = currentAccount?.address === lottery.owner;
+    const canBuy = lottery.status === 'ACTIVE' && !lottery.isExpired && !lottery.isSoldOut && !isOwned;
+    const maxBuyAmount = Math.min(10, parseInt(lottery.maxSupply) - parseInt(lottery.soldCount));
+
+    const handleBuyWonkaBars = async () => {
+        if (!currentAccount || !canBuy) {
+            if (!currentAccount) {
+                alert('Please connect your wallet first');
+            }
             return;
         }
 
         try {
+            const totalCost = BigInt(Math.floor(wonkaBarPrice * buyAmount * 1_000_000_000));
             await buyWonkaBars.mutateAsync({
                 lotteryId: lottery.lotteryId,
-                amount,
-                totalCost: BigInt(Math.floor(lottery.wonkaBarPrice * amount * 1_000_000_000))
+                amount: buyAmount,
+                totalCost
             });
+            setBuyAmount(1); // Reset to 1 after successful purchase
         } catch (error) {
             console.error('Failed to buy WonkaBars:', error);
         }
     };
 
+    const getStatusBadge = () => {
+        switch (lottery.status) {
+            case 'CONCLUDED':
+                return <span className="px-2 py-1 text-xs font-medium bg-green-600/20 text-green-400 rounded-full">Concluded</span>;
+            case 'EXPIRED':
+                return <span className="px-2 py-1 text-xs font-medium bg-orange-600/20 text-orange-400 rounded-full">Expired</span>;
+            case 'SOLD_OUT':
+                return <span className="px-2 py-1 text-xs font-medium bg-blue-600/20 text-blue-400 rounded-full">Sold Out</span>;
+            case 'ACTIVE':
+            default:
+                return <span className="px-2 py-1 text-xs font-medium bg-purple-600/20 text-purple-400 rounded-full">Active</span>;
+        }
+    };
+
     return (
-        <div className="group hover:shadow-xl transition-all duration-300 overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm rounded-lg">
+        <div className="group hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm rounded-lg">
             {/* NFT Image */}
             <div className="relative aspect-square overflow-hidden">
-                {!imageError ? (
+                {!imageError && lottery.collateralNft?.imageUrl ? (
                     <Image
-                        src={lottery.image}
-                        alt={lottery.title}
+                        src={lottery.collateralNft.imageUrl}
+                        alt={lottery.collateralNft.name || 'NFT'}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={() => setImageError(true)}
-                        placeholder="blur"
-                        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                        <ImageIcon className="w-16 h-16 text-white/40" />
+                    <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 flex items-center justify-center">
+                        <Trophy className="w-16 h-16 text-white/40" />
                     </div>
                 )}
 
                 {/* Status Badge */}
-                <div className="absolute top-4 left-4">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${lottery.status === 'CONCLUDED'
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                        : lottery.isExpired
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                            : lottery.isSoldOut
-                                ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        }`}>
-                        {lottery.isExpired ? 'EXPIRED' : lottery.isSoldOut ? 'SOLD OUT' : lottery.status}
+                <div className="absolute top-3 left-3">
+                    {getStatusBadge()}
+                </div>
+
+                {/* Owner Badge */}
+                {isOwned && (
+                    <div className="absolute top-3 right-3">
+                        <span className="px-2 py-1 text-xs font-medium bg-purple-600/80 text-white rounded-full">
+                            Your Lottery
+                        </span>
+                    </div>
+                )}
+
+                {/* Time Left Overlay */}
+                {lottery.status === 'ACTIVE' && (
+                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1">
+                        <div className="flex items-center text-white text-xs">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {lottery.daysLeft}d left
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Content */}
+            <div className="p-4 space-y-4">
+                {/* Header */}
+                <div>
+                    <h3 className="font-semibold text-white text-lg mb-1 line-clamp-2">
+                        {lottery.collateralNft?.name || `Lottery #${lottery.lotteryId}`}
+                    </h3>
+                    <div className="flex items-center justify-between text-sm text-white/60">
+                        <span>#{lottery.lotteryId}</span>
+                        <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-1" />
+                            <span>{lottery.participants}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Time Remaining */}
-                <div className="absolute top-4 right-4">
-                    <div className="bg-black/50 text-white px-2.5 py-0.5 text-xs font-semibold rounded-md flex items-center">
-                        <Clock className="w-3 h-3 mr-1" />
-                        {lottery.isExpired ? 'Expired' : `${lottery.daysLeft}d left`}
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span className="text-white/60 block">Price per bar</span>
+                        <span className="text-white font-semibold">{wonkaBarPrice.toFixed(4)} SUI</span>
+                    </div>
+                    <div>
+                        <span className="text-white/60 block">Total raised</span>
+                        <span className="text-white font-semibold">{totalRaised.toFixed(2)} SUI</span>
                     </div>
                 </div>
 
                 {/* Progress Bar */}
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm p-2">
-                    <div className="w-full bg-white/20 rounded-full h-2">
+                <div className="space-y-2">
+                    <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
                         <div
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${lottery.progressPercentage}%` }}
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                            style={{ width: `${Math.min(lottery.progressPercentage, 100)}%` }}
                         />
                     </div>
-                    <div className="flex justify-between text-xs text-white mt-1">
-                        <span>{lottery.wonkaBarsSold}/{lottery.wonkaBarsMaxSupply}</span>
-                        <span>{lottery.progressPercentage.toFixed(1)}%</span>
+                    <div className="flex justify-between text-xs text-white/60">
+                        <span>{lottery.progressPercentage.toFixed(1)}% filled</span>
+                        <span>{lottery.soldCount}/{lottery.maxSupply} sold</span>
                     </div>
                 </div>
-            </div>
 
-            {/* Card Content */}
-            <div className="p-6">
-                <div className="space-y-4">
-                    {/* Title */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-white group-hover:text-purple-300 transition-colors line-clamp-1">
-                            {lottery.title}
-                        </h3>
-                        {lottery.collection && (
-                            <p className="text-sm text-white/60">{lottery.collection}</p>
-                        )}
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span className="text-white/60">Price per Bar</span>
-                            <p className="text-white font-medium">{lottery.wonkaBarPrice.toFixed(4)} SUI</p>
+                {/* Buy Section */}
+                {canBuy && (
+                    <div className="space-y-3 pt-2 border-t border-white/10">
+                        {/* Amount Selector */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-white/80">Buy amount:</span>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setBuyAmount(Math.max(1, buyAmount - 1))}
+                                    disabled={buyAmount <= 1}
+                                    className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm flex items-center justify-center"
+                                >
+                                    -
+                                </button>
+                                <span className="text-white font-medium min-w-[2rem] text-center">{buyAmount}</span>
+                                <button
+                                    onClick={() => setBuyAmount(Math.min(maxBuyAmount, buyAmount + 1))}
+                                    disabled={buyAmount >= maxBuyAmount}
+                                    className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm flex items-center justify-center"
+                                >
+                                    +
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <span className="text-white/60">Total Raised</span>
-                            <p className="text-white font-medium">{lottery.totalRaised.toFixed(2)} SUI</p>
+
+                        {/* Total Cost */}
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-white/60">Total cost:</span>
+                            <span className="text-white font-semibold">
+                                {(wonkaBarPrice * buyAmount).toFixed(4)} SUI
+                            </span>
                         </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2">
-                        {lottery.status === 'ACTIVE' && !lottery.isExpired && !lottery.isSoldOut && (
-                            <button
-                                onClick={() => handleBuyWonkaBars(1)}
-                                disabled={isBuyingWonkaBars}
-                                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-medium py-2 px-4 rounded-md transition-all duration-200 flex items-center justify-center text-sm"
-                            >
-                                {isBuyingWonkaBars ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <>
-                                        <Plus className="w-4 h-4 mr-1" />
-                                        Buy WonkaBar
-                                    </>
-                                )}
-                            </button>
-                        )}
-
-                        <Link href={`/lottery/${lottery.lotteryId}`}>
-                            <button className="px-4 py-2 border border-white/20 text-white hover:bg-white/10 rounded-md transition-colors text-sm">
-                                View Details
-                            </button>
-                        </Link>
+                        {/* Buy Button */}
+                        <button
+                            onClick={handleBuyWonkaBars}
+                            disabled={isBuyingWonkaBars || !currentAccount}
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
+                        >
+                            {isBuyingWonkaBars ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <Ticket className="w-5 h-5 mr-2" />
+                                    Buy {buyAmount} WonkaBar{buyAmount > 1 ? 's' : ''}
+                                </>
+                            )}
+                        </button>
                     </div>
-                </div>
+                )}
+
+                {/* Status Messages */}
+                {!canBuy && (
+                    <div className="pt-2 border-t border-white/10">
+                        {isOwned ? (
+                            <div className="text-center py-2">
+                                <span className="text-purple-300 text-sm font-medium">Your Lottery</span>
+                            </div>
+                        ) : lottery.isSoldOut ? (
+                            <div className="text-center py-2">
+                                <span className="text-blue-300 text-sm font-medium">Sold Out</span>
+                            </div>
+                        ) : lottery.isExpired ? (
+                            <div className="text-center py-2">
+                                <span className="text-orange-300 text-sm font-medium">Expired</span>
+                            </div>
+                        ) : lottery.status === 'CONCLUDED' ? (
+                            <div className="text-center py-2">
+                                <span className="text-green-300 text-sm font-medium">Concluded</span>
+                            </div>
+                        ) : !currentAccount ? (
+                            <div className="text-center py-2">
+                                <span className="text-white/60 text-sm">Connect wallet to buy</span>
+                            </div>
+                        ) : null}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -209,49 +286,60 @@ export default function LotteriesPage() {
             const isSoldOut = parseInt(lottery.soldCount) >= parseInt(lottery.maxSupply);
             const daysLeft = getDaysLeft(lottery.expirationDate);
             const progressPercentage = (parseInt(lottery.soldCount) / parseInt(lottery.maxSupply)) * 100;
-            const wonkaBarPrice = parseFloat(formatSuiAmount(lottery.wonkaBarPrice));
-            const totalRaised = wonkaBarPrice * parseInt(lottery.soldCount);
+
+            let status: 'ACTIVE' | 'EXPIRED' | 'CONCLUDED' | 'SOLD_OUT';
+            if (lottery.state === 'CONCLUDED') {
+                status = 'CONCLUDED';
+            } else if (isExpired) {
+                status = 'EXPIRED';
+            } else if (isSoldOut) {
+                status = 'SOLD_OUT';
+            } else {
+                status = 'ACTIVE';
+            }
 
             return {
-                id: lottery.id,
+                id: lottery.id || lottery.lotteryId,
                 lotteryId: lottery.lotteryId,
-                title: lottery.collateralNft.name || `NFT #${lottery.lotteryId}`,
-                collection: lottery.collateralNft.collection,
-                image: lottery.collateralNft.imageUrl || '/placeholder-nft.jpg',
                 owner: lottery.owner,
+                collateralNft: lottery.collateralNft || {},
                 expirationDate,
-                wonkaBarPrice,
-                wonkaBarsSold: parseInt(lottery.soldCount),
-                wonkaBarsMaxSupply: parseInt(lottery.maxSupply),
-                totalRaised,
-                status: lottery.state,
+                wonkaBarPrice: lottery.wonkaBarPrice,
+                maxSupply: lottery.maxSupply,
+                soldCount: lottery.soldCount,
+                state: lottery.state,
+                daysLeft,
+                progressPercentage,
                 isExpired,
                 isSoldOut,
-                daysLeft,
-                progressPercentage
+                status,
+                participants: lottery.participants || 0,
             };
         });
     }, [lotteries]);
 
     // Filter and sort lotteries
     const filteredLotteries = useMemo(() => {
-        let filtered = displayLotteries;
+        let filtered = [...displayLotteries];
 
-        // Filter by search query
+        // Apply search filter
         if (searchQuery) {
             filtered = filtered.filter(lottery =>
-                lottery.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                lottery.collection?.toLowerCase().includes(searchQuery.toLowerCase())
+                lottery.collateralNft?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                lottery.lotteryId.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
-        // Filter by status
+        // Apply status filter
         if (statusFilter !== 'all') {
             filtered = filtered.filter(lottery => {
                 if (statusFilter === 'active') {
-                    return lottery.status === 'ACTIVE' && !lottery.isExpired;
+                    return lottery.status === 'ACTIVE';
                 }
-                return lottery.status === 'CONCLUDED' || lottery.isExpired;
+                if (statusFilter === 'concluded') {
+                    return lottery.status === 'CONCLUDED' || lottery.status === 'EXPIRED';
+                }
+                return true;
             });
         }
 
@@ -259,6 +347,9 @@ export default function LotteriesPage() {
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case 'ending-soon':
+                    // Active lotteries first, then by days left
+                    if (a.status === 'ACTIVE' && b.status !== 'ACTIVE') return -1;
+                    if (a.status !== 'ACTIVE' && b.status === 'ACTIVE') return 1;
                     return a.daysLeft - b.daysLeft;
                 case 'progress':
                     return b.progressPercentage - a.progressPercentage;
@@ -288,6 +379,28 @@ export default function LotteriesPage() {
                     <p className="text-xl text-white/80 mb-8 max-w-3xl mx-auto">
                         Discover amazing NFTs in active lotteries. Buy WonkaBars for a chance to win, or create your own lottery to unlock instant liquidity.
                     </p>
+                </div>
+
+                {/* Stats Banner */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 text-center">
+                        <div className="text-3xl font-bold text-white mb-2">
+                            {displayLotteries.length}
+                        </div>
+                        <div className="text-white/60">Total Lotteries</div>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 text-center">
+                        <div className="text-3xl font-bold text-white mb-2">
+                            {displayLotteries.filter(l => l.status === 'ACTIVE').length}
+                        </div>
+                        <div className="text-white/60">Active Lotteries</div>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 text-center">
+                        <div className="text-3xl font-bold text-white mb-2">
+                            {displayLotteries.reduce((sum, l) => sum + parseInt(l.soldCount), 0)}
+                        </div>
+                        <div className="text-white/60">WonkaBars Sold</div>
+                    </div>
                 </div>
 
                 {/* Filters and Search */}
@@ -348,63 +461,28 @@ export default function LotteriesPage() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20">
-                                <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-12 max-w-md mx-auto">
-                                    <Trophy className="w-16 h-16 text-white/40 mx-auto mb-6" />
-                                    <h3 className="text-xl font-semibold text-white mb-4">No Lotteries Found</h3>
-                                    <p className="text-white/60 mb-6">
-                                        {searchQuery || statusFilter !== 'all'
-                                            ? 'Try adjusting your search or filters'
-                                            : 'Be the first to create a lottery and unlock NFT liquidity!'
-                                        }
-                                    </p>
-                                    {!searchQuery && statusFilter === 'all' && (
-                                        <Link href="/create">
-                                            <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-3 rounded-md transition-colors flex items-center justify-center mx-auto">
-                                                <Plus className="w-4 h-4 mr-2" />
-                                                Create First Lottery
-                                            </button>
-                                        </Link>
-                                    )}
-                                </div>
+                            <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-12 text-center">
+                                <Trophy className="w-16 h-16 text-white/40 mx-auto mb-6" />
+                                <h3 className="text-2xl font-bold text-white mb-4">
+                                    {searchQuery || statusFilter !== 'all' ? 'No matching lotteries' : 'No lotteries available'}
+                                </h3>
+                                <p className="text-white/60 mb-8 max-w-md mx-auto">
+                                    {searchQuery || statusFilter !== 'all'
+                                        ? 'Try adjusting your search or filter criteria to find what you\'re looking for.'
+                                        : 'Be the first to create a lottery and unlock NFT liquidity!'
+                                    }
+                                </p>
+                                {(!searchQuery && statusFilter === 'all') && (
+                                    <Link href="/create">
+                                        <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center justify-center mx-auto">
+                                            <Plus className="w-5 h-5 mr-2" />
+                                            Create First Lottery
+                                        </button>
+                                    </Link>
+                                )}
                             </div>
                         )}
                     </>
-                )}
-
-                {/* Stats Section */}
-                {!isLoadingLotteries && filteredLotteries.length > 0 && (
-                    <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-                            <div className="flex justify-center mb-3">
-                                <Trophy className="w-8 h-8 text-amber-400" />
-                            </div>
-                            <div className="text-2xl font-bold text-white mb-2">
-                                {filteredLotteries.filter(l => l.status === 'ACTIVE' && !l.isExpired).length}
-                            </div>
-                            <div className="text-sm text-white/60">Active Lotteries</div>
-                        </div>
-
-                        <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-                            <div className="flex justify-center mb-3">
-                                <Users className="w-8 h-8 text-purple-400" />
-                            </div>
-                            <div className="text-2xl font-bold text-white mb-2">
-                                {filteredLotteries.reduce((sum, l) => sum + l.wonkaBarsSold, 0).toLocaleString()}
-                            </div>
-                            <div className="text-sm text-white/60">WonkaBars Sold</div>
-                        </div>
-
-                        <div className="rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm p-6 text-center">
-                            <div className="flex justify-center mb-3">
-                                <Coins className="w-8 h-8 text-green-400" />
-                            </div>
-                            <div className="text-2xl font-bold text-white mb-2">
-                                {filteredLotteries.reduce((sum, l) => sum + l.totalRaised, 0).toFixed(2)}
-                            </div>
-                            <div className="text-sm text-white/60">Total SUI Raised</div>
-                        </div>
-                    </div>
                 )}
             </div>
         </div>
