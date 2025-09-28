@@ -4,76 +4,441 @@ INCLUDING DEPENDENCY Sui
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING meltyfi
 [0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/meltyfi.move:8:26
+  [0m[34m┌─[0m ./sources/choco_chip.move:3:14
   [0m[34m│[0m
-[0m[34m8[0m [0m[34m│[0m     use sui::tx_context::[0m[33mTxContext[0m;
-  [0m[34m│[0m                          [0m[33m^^^^^^^^^[0m [0m[33mUnnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default[0m
-  [0m[34m│[0m
-  [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/meltyfi.move:9:22
-  [0m[34m│[0m
-[0m[34m9[0m [0m[34m│[0m     use std::option::[0m[33mOption[0m;
-  [0m[34m│[0m                      [0m[33m^^^^^^[0m [0m[33mUnnecessary alias 'Option' for module member 'std::option::Option'. This alias is provided by default[0m
-  [0m[34m│[0m
-  [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/choco_chip.move:4:27
-  [0m[34m│[0m
-[0m[34m4[0m [0m[34m│[0m     use sui::tx_context::{[0m[33mSelf[0m, TxContext};
-  [0m[34m│[0m                           [0m[33m^^^^[0m [0m[33mUnnecessary alias 'tx_context' for module 'sui::tx_context'. This alias is provided by default[0m
-  [0m[34m│[0m
-  [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/choco_chip.move:4:33
-  [0m[34m│[0m
-[0m[34m4[0m [0m[34m│[0m     use sui::tx_context::{Self, [0m[33mTxContext[0m};
-  [0m[34m│[0m                                 [0m[33m^^^^^^^^^[0m [0m[33mUnnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default[0m
-  [0m[34m│[0m
-  [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/choco_chip.move:5:14
-  [0m[34m│[0m
-[0m[34m5[0m [0m[34m│[0m     use sui::[0m[33mtransfer[0m;
+[0m[34m3[0m [0m[34m│[0m     use sui::[0m[33mtransfer[0m;
   [0m[34m│[0m              [0m[33m^^^^^^^^[0m [0m[33mUnnecessary alias 'transfer' for module 'sui::transfer'. This alias is provided by default[0m
   [0m[34m│[0m
   [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 [0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/choco_chip.move:6:23
+  [0m[34m┌─[0m ./sources/choco_chip.move:4:26
   [0m[34m│[0m
-[0m[34m6[0m [0m[34m│[0m     use sui::object::{[0m[33mSelf[0m, UID};
+[0m[34m4[0m [0m[34m│[0m     use sui::tx_context::[0m[33mTxContext[0m;
+  [0m[34m│[0m                          [0m[33m^^^^^^^^^[0m [0m[33mUnnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default[0m
+  [0m[34m│[0m
+  [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
+  [0m[34m┌─[0m ./sources/choco_chip.move:5:23
+  [0m[34m│[0m
+[0m[34m5[0m [0m[34m│[0m     use sui::object::{[0m[33mSelf[0m, UID};
   [0m[34m│[0m                       [0m[33m^^^^[0m [0m[33mUnnecessary alias 'object' for module 'sui::object'. This alias is provided by default[0m
   [0m[34m│[0m
   [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 [0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/choco_chip.move:6:29
+  [0m[34m┌─[0m ./sources/choco_chip.move:5:29
   [0m[34m│[0m
-[0m[34m6[0m [0m[34m│[0m     use sui::object::{Self, [0m[33mUID[0m};
+[0m[34m5[0m [0m[34m│[0m     use sui::object::{Self, [0m[33mUID[0m};
   [0m[34m│[0m                             [0m[33m^^^[0m [0m[33mUnnecessary alias 'UID' for module member 'sui::object::UID'. This alias is provided by default[0m
   [0m[34m│[0m
   [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
-[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-  [0m[34m┌─[0m ./sources/choco_chip.move:9:14
+[0m[1m[38;5;11mwarning[W09001][0m[1m: unused alias[0m
+  [0m[34m┌─[0m ./sources/choco_chip.move:6:24
   [0m[34m│[0m
-[0m[34m9[0m [0m[34m│[0m     use std::[0m[33mvector[0m;
-  [0m[34m│[0m              [0m[33m^^^^^^[0m [0m[33mUnnecessary alias 'vector' for module 'std::vector'. This alias is provided by default[0m
+[0m[34m6[0m [0m[34m│[0m     use sui::balance::{[0m[33mSelf[0m, Balance};
+  [0m[34m│[0m                        [0m[33m^^^^[0m [0m[33mUnused 'use' of alias 'balance'. Consider removing it[0m
+  [0m[34m│[0m
+  [0m[34m=[0m This warning can be suppressed with '#[allow(unused_use)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;11mwarning[W09001][0m[1m: unused alias[0m
+  [0m[34m┌─[0m ./sources/choco_chip.move:6:30
+  [0m[34m│[0m
+[0m[34m6[0m [0m[34m│[0m     use sui::balance::{Self, [0m[33mBalance[0m};
+  [0m[34m│[0m                              [0m[33m^^^^^^^[0m [0m[33mUnused 'use' of alias 'Balance'. Consider removing it[0m
+  [0m[34m│[0m
+  [0m[34m=[0m This warning can be suppressed with '#[allow(unused_use)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
+  [0m[34m┌─[0m ./sources/choco_chip.move:8:14
+  [0m[34m│[0m
+[0m[34m8[0m [0m[34m│[0m     use std::[0m[33moption[0m;
+  [0m[34m│[0m              [0m[33m^^^^^^[0m [0m[33mUnnecessary alias 'option' for module 'std::option'. This alias is provided by default[0m
   [0m[34m│[0m
   [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
-[0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
-   [0m[34m┌─[0m ./sources/choco_chip.move:10:14
+[0m[1m[38;5;11mwarning[W09011][0m[1m: unused constant[0m
+   [0m[34m┌─[0m ./sources/choco_chip.move:34:11
    [0m[34m│[0m
-[0m[34m10[0m [0m[34m│[0m     use std::[0m[33moption[0m;
-   [0m[34m│[0m              [0m[33m^^^^^^[0m [0m[33mUnnecessary alias 'option' for module 'std::option'. This alias is provided by default[0m
+[0m[34m34[0m [0m[34m│[0m     const [0m[33mE_NOT_AUTHORIZED[0m: u64 = 1;
+   [0m[34m│[0m           [0m[33m^^^^^^^^^^^^^^^^[0m [0m[33mThe constant 'E_NOT_AUTHORIZED' is never used. Consider removing it.[0m
    [0m[34m│[0m
-   [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+   [0m[34m=[0m This warning can be suppressed with '#[allow(unused_const)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;11mwarning[W09011][0m[1m: unused constant[0m
+   [0m[34m┌─[0m ./sources/choco_chip.move:35:11
+   [0m[34m│[0m
+[0m[34m35[0m [0m[34m│[0m     const [0m[33mE_INSUFFICIENT_FUNDS[0m: u64 = 2;
+   [0m[34m│[0m           [0m[33m^^^^^^^^^^^^^^^^^^^^[0m [0m[33mThe constant 'E_INSUFFICIENT_FUNDS' is never used. Consider removing it.[0m
+   [0m[34m│[0m
+   [0m[34m=[0m This warning can be suppressed with '#[allow(unused_const)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;11mwarning[W09011][0m[1m: unused constant[0m
+   [0m[34m┌─[0m ./sources/choco_chip.move:36:11
+   [0m[34m│[0m
+[0m[34m36[0m [0m[34m│[0m     const [0m[33mE_INVALID_AMOUNT[0m: u64 = 3;
+   [0m[34m│[0m           [0m[33m^^^^^^^^^^^^^^^^[0m [0m[33mThe constant 'E_INVALID_AMOUNT' is never used. Consider removing it.[0m
+   [0m[34m│[0m
+   [0m[34m=[0m This warning can be suppressed with '#[allow(unused_const)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;9merror[E04007][0m[1m: incompatible types[0m
+    [0m[34m┌─[0m ./sources/choco_chip.move:52:40
+    [0m[34m│[0m  
+[0m[34m 42[0m [0m[34m│[0m       const DESCRIPTION: vector<u8> = b"MeltyFi governance and reward token - earn by participating in NFT lotteries";
+    [0m[34m│[0m                          [0m[34m----------[0m [0m[34mGiven: 'vector<u8>'[0m
+    [0m[34m·[0m  
+[0m[34m 52[0m [0m[34m│[0m           let (treasury_cap, metadata) = [0m[31mcoin_registry::new_currency_with_otw([0m
+    [0m[34m│[0m [0m[31m╭[0m[0m[31m────────────────────────────────────────^[0m
+[0m[34m 53[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            witness,[0m
+[0m[34m 54[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            DECIMALS,[0m
+[0m[34m 55[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            SYMBOL,[0m
+    [0m[34m·[0m [0m[31m│[0m
+[0m[34m 59[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            ctx[0m
+[0m[34m 60[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        )[0m;
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────────^ Invalid call of 'sui::coin_registry::new_currency_with_otw'. Invalid argument for parameter 'description'[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m /Users/vincenzo/.move/https___github_com_MystenLabs_sui_git_framework__testnet/crates/sui-framework/packages/sui-framework/sources/registries/coin_registry.move:202:18
+    [0m[34m│[0m
+[0m[34m202[0m [0m[34m│[0m     description: String,
+    [0m[34m│[0m                  [0m[34m------[0m [0m[34mExpected: 'std::string::String'[0m
+
+[0m[1m[38;5;9merror[E04007][0m[1m: incompatible types[0m
+    [0m[34m┌─[0m ./sources/choco_chip.move:52:40
+    [0m[34m│[0m  
+[0m[34m 52[0m [0m[34m│[0m           let (treasury_cap, metadata) = [0m[31mcoin_registry::new_currency_with_otw([0m
+    [0m[34m│[0m [0m[31m╭[0m[0m[31m────────────────────────────────────────^[0m
+[0m[34m 53[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            witness,[0m
+[0m[34m 54[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            DECIMALS,[0m
+[0m[34m 55[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            SYMBOL,[0m
+    [0m[34m·[0m [0m[31m│[0m
+[0m[34m 59[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            ctx[0m
+[0m[34m 60[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        )[0m;
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────────^ Invalid call of 'sui::coin_registry::new_currency_with_otw'. Invalid argument for parameter 'icon_url'[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m /Users/vincenzo/.move/https___github_com_MystenLabs_sui_git_framework__testnet/crates/sui-framework/packages/move-stdlib/sources/option.move:26:39
+    [0m[34m│[0m
+[0m[34m 26[0m [0m[34m│[0m public fun some<Element>(e: Element): Option<Element> {
+    [0m[34m│[0m                                       [0m[34m---------------[0m [0m[34mGiven: 'std::option::Option<vector<u8>>'[0m
+    [0m[34m│[0m
+    [0m[34m┌─[0m /Users/vincenzo/.move/https___github_com_MystenLabs_sui_git_framework__testnet/crates/sui-framework/packages/sui-framework/sources/registries/coin_registry.move:203:15
+    [0m[34m│[0m
+[0m[34m203[0m [0m[34m│[0m     icon_url: String,
+    [0m[34m│[0m               [0m[34m------[0m [0m[34mExpected: 'std::string::String'[0m
+
+[0m[1m[38;5;9merror[E04007][0m[1m: incompatible types[0m
+    [0m[34m┌─[0m ./sources/choco_chip.move:52:40
+    [0m[34m│[0m  
+[0m[34m 41[0m [0m[34m│[0m       const NAME: vector<u8> = b"ChocoChip";
+    [0m[34m│[0m                   [0m[34m----------[0m [0m[34mGiven: 'vector<u8>'[0m
+    [0m[34m·[0m  
+[0m[34m 52[0m [0m[34m│[0m           let (treasury_cap, metadata) = [0m[31mcoin_registry::new_currency_with_otw([0m
+    [0m[34m│[0m [0m[31m╭[0m[0m[31m────────────────────────────────────────^[0m
+[0m[34m 53[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            witness,[0m
+[0m[34m 54[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            DECIMALS,[0m
+[0m[34m 55[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            SYMBOL,[0m
+    [0m[34m·[0m [0m[31m│[0m
+[0m[34m 59[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            ctx[0m
+[0m[34m 60[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        )[0m;
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────────^ Invalid call of 'sui::coin_registry::new_currency_with_otw'. Invalid argument for parameter 'name'[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m /Users/vincenzo/.move/https___github_com_MystenLabs_sui_git_framework__testnet/crates/sui-framework/packages/sui-framework/sources/registries/coin_registry.move:201:11
+    [0m[34m│[0m
+[0m[34m201[0m [0m[34m│[0m     name: String,
+    [0m[34m│[0m           [0m[34m------[0m [0m[34mExpected: 'std::string::String'[0m
+
+[0m[1m[38;5;9merror[E04007][0m[1m: incompatible types[0m
+    [0m[34m┌─[0m ./sources/choco_chip.move:52:40
+    [0m[34m│[0m  
+[0m[34m 40[0m [0m[34m│[0m       const SYMBOL: vector<u8> = b"CHOCO";
+    [0m[34m│[0m                     [0m[34m----------[0m [0m[34mGiven: 'vector<u8>'[0m
+    [0m[34m·[0m  
+[0m[34m 52[0m [0m[34m│[0m           let (treasury_cap, metadata) = [0m[31mcoin_registry::new_currency_with_otw([0m
+    [0m[34m│[0m [0m[31m╭[0m[0m[31m────────────────────────────────────────^[0m
+[0m[34m 53[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            witness,[0m
+[0m[34m 54[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            DECIMALS,[0m
+[0m[34m 55[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            SYMBOL,[0m
+    [0m[34m·[0m [0m[31m│[0m
+[0m[34m 59[0m [0m[34m│[0m [0m[31m│[0m [0m[31m            ctx[0m
+[0m[34m 60[0m [0m[34m│[0m [0m[31m│[0m [0m[31m        )[0m;
+    [0m[34m│[0m [0m[31m╰[0m[0m[31m─────────^ Invalid call of 'sui::coin_registry::new_currency_with_otw'. Invalid argument for parameter 'symbol'[0m
+    [0m[34m│[0m  
+    [0m[34m┌─[0m /Users/vincenzo/.move/https___github_com_MystenLabs_sui_git_framework__testnet/crates/sui-framework/packages/sui-framework/sources/registries/coin_registry.move:200:13
+    [0m[34m│[0m
+[0m[34m200[0m [0m[34m│[0m     symbol: String,
+    [0m[34m│[0m             [0m[34m------[0m [0m[34mExpected: 'std::string::String'[0m
+
+[0m[1m[38;5;9merror[E04007][0m[1m: incompatible types[0m
+    [0m[34m┌─[0m ./sources/choco_chip.move:66:23
+    [0m[34m│[0m
+[0m[34m 21[0m [0m[34m│[0m         mint_cap: coin::TreasuryCap<CHOCO_CHIP>,
+    [0m[34m│[0m                   [0m[34m-----------------------------[0m [0m[34mExpected: 'sui::coin::TreasuryCap<meltyfi::choco_chip::CHOCO_CHIP>'[0m
+    [0m[34m·[0m
+[0m[34m 66[0m [0m[34m│[0m             mint_cap: [0m[31mtreasury_cap[0m,
+    [0m[34m│[0m                       [0m[31m^^^^^^^^^^^^[0m [0m[31mInvalid argument for field 'mint_cap' for 'meltyfi::choco_chip::ChocolateFactory'[0m
+    [0m[34m│[0m
+    [0m[34m┌─[0m /Users/vincenzo/.move/https___github_com_MystenLabs_sui_git_framework__testnet/crates/sui-framework/packages/sui-framework/sources/registries/coin_registry.move:205:5
+    [0m[34m│[0m
+[0m[34m205[0m [0m[34m│[0m ): (CurrencyInitializer<T>, TreasuryCap<T>) {
+    [0m[34m│[0m     [0m[34m----------------------[0m [0m[34mGiven: 'sui::coin_registry::CurrencyInitializer<meltyfi::choco_chip::CHOCO_CHIP>'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+  [0m[34m┌─[0m ./sources/meltyfi.move:2:9
+  [0m[34m│[0m
+[0m[34m2[0m [0m[34m│[0m     use [0m[31mmeltyfi::meltyfi_core[0m;
+  [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi::meltyfi_core'[0m
+
+[0m[1m[38;5;11mwarning[W09001][0m[1m: unused alias[0m
+  [0m[34m┌─[0m ./sources/meltyfi.move:3:18
+  [0m[34m│[0m
+[0m[34m3[0m [0m[34m│[0m     use meltyfi::[0m[33mchoco_chip[0m;
+  [0m[34m│[0m                  [0m[33m^^^^^^^^^^[0m [0m[33mUnused 'use' of alias 'choco_chip'. Consider removing it[0m
+  [0m[34m│[0m
+  [0m[34m=[0m This warning can be suppressed with '#[allow(unused_use)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+  [0m[34m┌─[0m ./sources/meltyfi.move:4:9
+  [0m[34m│[0m
+[0m[34m4[0m [0m[34m│[0m     use [0m[31mmeltyfi::wonka_bars[0m;
+  [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi::wonka_bars'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:11:66
+   [0m[34m│[0m
+[0m[34m11[0m [0m[34m│[0m     public use fun meltyfi_core::create_lottery as create_lottery[0m[31m;[0m
+   [0m[34m│[0m                                                                  [0m[31m^[0m
+   [0m[34m│[0m                                                                  [0m[31m│[0m
+   [0m[34m│[0m                                                                  [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                  [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:12:66
+   [0m[34m│[0m
+[0m[34m12[0m [0m[34m│[0m     public use fun meltyfi_core::buy_wonka_bars as buy_wonka_bars[0m[31m;[0m
+   [0m[34m│[0m                                                                  [0m[31m^[0m
+   [0m[34m│[0m                                                                  [0m[31m│[0m
+   [0m[34m│[0m                                                                  [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                  [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:13:66
+   [0m[34m│[0m
+[0m[34m13[0m [0m[34m│[0m     public use fun meltyfi_core::cancel_lottery as cancel_lottery[0m[31m;[0m
+   [0m[34m│[0m                                                                  [0m[31m^[0m
+   [0m[34m│[0m                                                                  [0m[31m│[0m
+   [0m[34m│[0m                                                                  [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                  [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:14:58
+   [0m[34m│[0m
+[0m[34m14[0m [0m[34m│[0m     public use fun meltyfi_core::repay_loan as repay_loan[0m[31m;[0m
+   [0m[34m│[0m                                                          [0m[31m^[0m
+   [0m[34m│[0m                                                          [0m[31m│[0m
+   [0m[34m│[0m                                                          [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                          [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:15:60
+   [0m[34m│[0m
+[0m[34m15[0m [0m[34m│[0m     public use fun meltyfi_core::draw_winner as draw_winner[0m[31m;[0m
+   [0m[34m│[0m                                                            [0m[31m^[0m
+   [0m[34m│[0m                                                            [0m[31m│[0m
+   [0m[34m│[0m                                                            [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                            [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:18:68
+   [0m[34m│[0m
+[0m[34m18[0m [0m[34m│[0m     public use fun meltyfi_core::lottery_details as lottery_details[0m[31m;[0m
+   [0m[34m│[0m                                                                    [0m[31m^[0m
+   [0m[34m│[0m                                                                    [0m[31m│[0m
+   [0m[34m│[0m                                                                    [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                    [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:19:66
+   [0m[34m│[0m
+[0m[34m19[0m [0m[34m│[0m     public use fun meltyfi_core::protocol_stats as protocol_stats[0m[31m;[0m
+   [0m[34m│[0m                                                                  [0m[31m^[0m
+   [0m[34m│[0m                                                                  [0m[31m│[0m
+   [0m[34m│[0m                                                                  [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                  [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:20:74
+   [0m[34m│[0m
+[0m[34m20[0m [0m[34m│[0m     public use fun meltyfi_core::user_participation as user_participation[0m[31m;[0m
+   [0m[34m│[0m                                                                          [0m[31m^[0m
+   [0m[34m│[0m                                                                          [0m[31m│[0m
+   [0m[34m│[0m                                                                          [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                          [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:21:72
+   [0m[34m│[0m
+[0m[34m21[0m [0m[34m│[0m     public use fun meltyfi_core::is_lottery_winner as is_lottery_winner[0m[31m;[0m
+   [0m[34m│[0m                                                                        [0m[31m^[0m
+   [0m[34m│[0m                                                                        [0m[31m│[0m
+   [0m[34m│[0m                                                                        [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                        [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:24:50
+   [0m[34m│[0m
+[0m[34m24[0m [0m[34m│[0m     public use fun choco_chip::mint as mint_choco[0m[31m;[0m
+   [0m[34m│[0m                                                  [0m[31m^[0m
+   [0m[34m│[0m                                                  [0m[31m│[0m
+   [0m[34m│[0m                                                  [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                  [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:25:66
+   [0m[34m│[0m
+[0m[34m25[0m [0m[34m│[0m     public use fun choco_chip::total_supply as choco_total_supply[0m[31m;[0m
+   [0m[34m│[0m                                                                  [0m[31m^[0m
+   [0m[34m│[0m                                                                  [0m[31m│[0m
+   [0m[34m│[0m                                                                  [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                  [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:26:56
+   [0m[34m│[0m
+[0m[34m26[0m [0m[34m│[0m     public use fun choco_chip::balance as choco_balance[0m[31m;[0m
+   [0m[34m│[0m                                                        [0m[31m^[0m
+   [0m[34m│[0m                                                        [0m[31m│[0m
+   [0m[34m│[0m                                                        [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                        [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:29:55
+   [0m[34m│[0m
+[0m[34m29[0m [0m[34m│[0m     public use fun wonka_bars::mint as mint_wonka_bars[0m[31m;[0m
+   [0m[34m│[0m                                                       [0m[31m^[0m
+   [0m[34m│[0m                                                       [0m[31m│[0m
+   [0m[34m│[0m                                                       [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                       [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:30:55
+   [0m[34m│[0m
+[0m[34m30[0m [0m[34m│[0m     public use fun wonka_bars::burn as burn_wonka_bars[0m[31m;[0m
+   [0m[34m│[0m                                                       [0m[31m^[0m
+   [0m[34m│[0m                                                       [0m[31m│[0m
+   [0m[34m│[0m                                                       [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                       [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01002][0m[1m: unexpected token[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:31:70
+   [0m[34m│[0m
+[0m[34m31[0m [0m[34m│[0m     public use fun wonka_bars::get_lottery_id as get_wonka_lottery_id[0m[31m;[0m
+   [0m[34m│[0m                                                                      [0m[31m^[0m
+   [0m[34m│[0m                                                                      [0m[31m│[0m
+   [0m[34m│[0m                                                                      [0m[31mUnexpected ';'[0m
+   [0m[34m│[0m                                                                      [0m[34mExpected '.'[0m
+
+[0m[1m[38;5;9merror[E01003][0m[1m: invalid modifier[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:38:5
+   [0m[34m│[0m
+[0m[34m38[0m [0m[34m│[0m     [0m[31mpublic[0m use meltyfi_core::{
+   [0m[34m│[0m     [0m[31m^^^^^^[0m [0m[31mInvalid use declaration. Non-'use fun' declarations cannot have visibility modifiers as they are always internal[0m
+
+[0m[1m[38;5;9merror[E03001][0m[1m: address with no value[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:38:16
+   [0m[34m│[0m
+[0m[34m38[0m [0m[34m│[0m     public use [0m[31mmeltyfi_core[0m::{
+   [0m[34m│[0m                [0m[31m^^^^^^^^^^^^[0m [0m[31maddress 'meltyfi_core' is not assigned a value[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:39:9
+   [0m[34m│[0m
+[0m[34m39[0m [0m[34m│[0m         [0m[31mProtocol[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::Protocol'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:40:9
+   [0m[34m│[0m
+[0m[34m40[0m [0m[34m│[0m         [0m[31mLottery[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::Lottery'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:41:9
+   [0m[34m│[0m
+[0m[34m41[0m [0m[34m│[0m         [0m[31mLotteryState[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::LotteryState'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:42:9
+   [0m[34m│[0m
+[0m[34m42[0m [0m[34m│[0m         [0m[31mAdminCap[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::AdminCap'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:43:9
+   [0m[34m│[0m
+[0m[34m43[0m [0m[34m│[0m         [0m[31mProtocolStats[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::ProtocolStats'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:44:9
+   [0m[34m│[0m
+[0m[34m44[0m [0m[34m│[0m         [0m[31mLotteryDetails[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::LotteryDetails'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:45:9
+   [0m[34m│[0m
+[0m[34m45[0m [0m[34m│[0m         [0m[31mUserParticipation[0m
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'meltyfi_core::UserParticipation'[0m
+
+[0m[1m[38;5;9merror[E01003][0m[1m: invalid modifier[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:49:5
+   [0m[34m│[0m
+[0m[34m49[0m [0m[34m│[0m     [0m[31mpublic[0m use choco_chip::{
+   [0m[34m│[0m     [0m[31m^^^^^^[0m [0m[31mInvalid use declaration. Non-'use fun' declarations cannot have visibility modifiers as they are always internal[0m
+
+[0m[1m[38;5;9merror[E03001][0m[1m: address with no value[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:49:16
+   [0m[34m│[0m
+[0m[34m49[0m [0m[34m│[0m     public use [0m[31mchoco_chip[0m::{
+   [0m[34m│[0m                [0m[31m^^^^^^^^^^[0m [0m[31maddress 'choco_chip' is not assigned a value[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:50:9
+   [0m[34m│[0m
+[0m[34m50[0m [0m[34m│[0m         [0m[31mCHOCO_CHIP[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'choco_chip::CHOCO_CHIP'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:51:9
+   [0m[34m│[0m
+[0m[34m51[0m [0m[34m│[0m         [0m[31mChocolateFactory[0m,
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'choco_chip::ChocolateFactory'[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:52:9
+   [0m[34m│[0m
+[0m[34m52[0m [0m[34m│[0m         [0m[31mFactoryAdmin[0m
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'choco_chip::FactoryAdmin'[0m
+
+[0m[1m[38;5;9merror[E01003][0m[1m: invalid modifier[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:56:5
+   [0m[34m│[0m
+[0m[34m56[0m [0m[34m│[0m     [0m[31mpublic[0m use wonka_bars::{
+   [0m[34m│[0m     [0m[31m^^^^^^[0m [0m[31mInvalid use declaration. Non-'use fun' declarations cannot have visibility modifiers as they are always internal[0m
+
+[0m[1m[38;5;9merror[E03001][0m[1m: address with no value[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:56:16
+   [0m[34m│[0m
+[0m[34m56[0m [0m[34m│[0m     public use [0m[31mwonka_bars[0m::{
+   [0m[34m│[0m                [0m[31m^^^^^^^^^^[0m [0m[31maddress 'wonka_bars' is not assigned a value[0m
+
+[0m[1m[38;5;9merror[E03002][0m[1m: unbound module[0m
+   [0m[34m┌─[0m ./sources/meltyfi.move:57:9
+   [0m[34m│[0m
+[0m[34m57[0m [0m[34m│[0m         [0m[31mWonkaBars[0m
+   [0m[34m│[0m         [0m[31m^^^^^^^^^[0m [0m[31mInvalid 'use'. Unbound module: 'wonka_bars::WonkaBars'[0m
 
 [0m[1m[38;5;11mwarning[W02021][0m[1m: duplicate alias[0m
   [0m[34m┌─[0m ./sources/core.move:3:23
@@ -147,76 +512,4 @@ BUILDING meltyfi
    [0m[34m│[0m
    [0m[34m=[0m This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
-[0m[1m[38;5;11mwarning[Lint W99001][0m[1m: non-composable transfer to sender[0m
-    [0m[34m┌─[0m ./sources/core.move:235:9
-    [0m[34m│[0m
-[0m[34m170[0m [0m[34m│[0m     public fun create_lottery<T: key + store>(
-    [0m[34m│[0m                [0m[34m--------------[0m [0m[34mReturning an object from a function, allows a caller to use the object and enables composability via programmable transactions.[0m
-    [0m[34m·[0m
-[0m[34m186[0m [0m[34m│[0m         let owner = tx_context::sender(ctx);
-    [0m[34m│[0m                     [0m[34m-----------------------[0m [0m[34mTransaction sender address coming from here[0m
-    [0m[34m·[0m
-[0m[34m235[0m [0m[34m│[0m         [0m[33mtransfer::transfer(receipt, owner)[0m;  // <-- CHANGED: Transfer receipt to owner instead of returning
-    [0m[34m│[0m         [0m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[33mTransfer of an object to transaction sender address[0m
-    [0m[34m│[0m
-    [0m[34m=[0m This warning can be suppressed with '#[allow(lint(self_transfer))]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[Lint W99001][0m[1m: non-composable transfer to sender[0m
-    [0m[34m┌─[0m ./sources/core.move:266:13
-    [0m[34m│[0m
-[0m[34m246[0m [0m[34m│[0m     ): WonkaBar {
-    [0m[34m│[0m        [0m[34m--------[0m [0m[34mReturning an object from a function, allows a caller to use the object and enables composability via programmable transactions.[0m
-    [0m[34m·[0m
-[0m[34m257[0m [0m[34m│[0m         let buyer = tx_context::sender(ctx);
-    [0m[34m│[0m                     [0m[34m-----------------------[0m [0m[34mTransaction sender address coming from here[0m
-    [0m[34m·[0m
-[0m[34m266[0m [0m[34m│[0m             [0m[33mtransfer::public_transfer(coin::from_balance(payment_balance, ctx), buyer)[0m;
-    [0m[34m│[0m             [0m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[33mTransfer of an object to transaction sender address[0m
-    [0m[34m│[0m
-    [0m[34m=[0m This warning can be suppressed with '#[allow(lint(self_transfer))]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[Lint W99001][0m[1m: non-composable transfer to sender[0m
-    [0m[34m┌─[0m ./sources/core.move:397:17
-    [0m[34m│[0m
-[0m[34m360[0m [0m[34m│[0m     ): Option<T> {
-    [0m[34m│[0m        [0m[34m---------[0m [0m[34mReturning an object from a function, allows a caller to use the object and enables composability via programmable transactions.[0m
-[0m[34m361[0m [0m[34m│[0m         assert!(lottery.state != LOTTERY_ACTIVE, EInvalidLotteryState);
-[0m[34m362[0m [0m[34m│[0m         let claimer = tx_context::sender(ctx);
-    [0m[34m│[0m                       [0m[34m-----------------------[0m [0m[34mTransaction sender address coming from here[0m
-    [0m[34m·[0m
-[0m[34m397[0m [0m[34m│[0m                 [0m[33mtransfer::public_transfer(refund_coin, claimer)[0m;
-    [0m[34m│[0m                 [0m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[33mTransfer of an object to transaction sender address[0m
-    [0m[34m│[0m
-    [0m[34m=[0m This warning can be suppressed with '#[allow(lint(self_transfer))]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[Lint W99001][0m[1m: non-composable transfer to sender[0m
-    [0m[34m┌─[0m ./sources/core.move:436:13
-    [0m[34m│[0m
-[0m[34m412[0m [0m[34m│[0m     public fun cancel_lottery(
-    [0m[34m│[0m                [0m[34m--------------[0m [0m[34mReturning an object from a function, allows a caller to use the object and enables composability via programmable transactions.[0m
-    [0m[34m·[0m
-[0m[34m423[0m [0m[34m│[0m         let sender = tx_context::sender(ctx);
-    [0m[34m│[0m                      [0m[34m-----------------------[0m [0m[34mTransaction sender address coming from here[0m
-    [0m[34m·[0m
-[0m[34m436[0m [0m[34m│[0m             [0m[33mtransfer::public_transfer(coin::from_balance(payment_balance, ctx), sender)[0m;
-    [0m[34m│[0m             [0m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[33mTransfer of an object to transaction sender address[0m
-    [0m[34m│[0m
-    [0m[34m=[0m This warning can be suppressed with '#[allow(lint(self_transfer))]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-[0m[1m[38;5;11mwarning[Lint W99001][0m[1m: non-composable transfer to sender[0m
-    [0m[34m┌─[0m ./sources/core.move:486:9
-    [0m[34m│[0m
-[0m[34m476[0m [0m[34m│[0m     public fun withdraw_protocol_fees(
-    [0m[34m│[0m                [0m[34m----------------------[0m [0m[34mReturning an object from a function, allows a caller to use the object and enables composability via programmable transactions.[0m
-    [0m[34m·[0m
-[0m[34m486[0m [0m[34m│[0m         [0m[33mtransfer::public_transfer(fee_coin, tx_context::sender(ctx))[0m;
-    [0m[34m│[0m         [0m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-    [0m[34m│[0m         [0m[33m│[0m                                   [0m[34m│[0m
-    [0m[34m│[0m         [0m[33m│[0m                                   [0m[34mTransaction sender address coming from here[0m
-    [0m[34m│[0m         [0m[33mTransfer of an object to transaction sender address[0m
-    [0m[34m│[0m
-    [0m[34m=[0m This warning can be suppressed with '#[allow(lint(self_transfer))]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-Please report feedback on the linter warnings at https://forums.sui.io
-
-Total number of linter warnings suppressed: 2 (unique lints: 1)
+Failed to build Move modules: Compilation error.

@@ -56,6 +56,29 @@ export interface UserStats {
     suiBalance: string;
 }
 
+// Constants for Sui system objects
+const SUI_CLOCK_OBJECT_ID = '0x0000000000000000000000000000000000000000000000000000000000000006';
+const SUI_RANDOM_OBJECT_ID = '0x0000000000000000000000000000000000000000000000000000000000000008';
+
+// Helper function to validate environment variables
+function validateEnvironmentVariables() {
+    const required = [
+        { name: 'MELTYFI_PACKAGE_ID', value: MELTYFI_PACKAGE_ID },
+        { name: 'PROTOCOL_OBJECT_ID', value: PROTOCOL_OBJECT_ID },
+    ];
+
+    for (const { name, value } of required) {
+        if (!value || value.trim() === '') {
+            throw new Error(`Missing required environment variable: ${name}. Please check your .env.local file.`);
+        }
+
+        // Basic format validation for Sui object IDs
+        if (!value.startsWith('0x') || value.length !== 66) {
+            throw new Error(`Invalid format for ${name}: ${value}. Should be a 64-character hex string with 0x prefix.`);
+        }
+    }
+}
+
 // Helper function to parse object content
 function parseObjectContent(obj: SuiObjectResponse): any {
     if (obj.data?.content?.dataType === 'moveObject') {
@@ -83,7 +106,7 @@ function parseWonkaBar(obj: SuiObjectResponse): WonkaBar | null {
     }
 }
 
-// UPDATED: Helper function to fetch NFT details from object ID
+// Helper function to fetch NFT details from object ID
 async function fetchNFTDetails(suiClient: any, nftId: string) {
     try {
         const nftObject = await suiClient.getObject({
@@ -157,11 +180,23 @@ export function useMeltyFi() {
     const queryClient = useQueryClient();
     const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
 
-    // FIXED: Fetch all lotteries - Use events to get lottery object IDs, then fetch the objects
+    // Validate environment variables before making any calls
+    useMemo(() => {
+        try {
+            validateEnvironmentVariables();
+        } catch (error) {
+            console.error('Environment validation failed:', error);
+            toast.error(`Configuration error: ${error.message}`);
+        }
+    }, []);
+
+    // Fetch all lotteries - Use events to get lottery object IDs, then fetch the objects
     const { data: lotteries = [], isLoading: isLoadingLotteries } = useQuery({
         queryKey: ['lotteries'],
         queryFn: async () => {
             try {
+                validateEnvironmentVariables();
+
                 // First, get lottery creation events to find lottery object IDs
                 const events = await suiClient.queryEvents({
                     query: {
@@ -302,11 +337,14 @@ export function useMeltyFi() {
                 return validLotteries;
             } catch (error) {
                 console.error('Error fetching lotteries:', error);
+                toast.error('Failed to fetch lotteries. Please check your network connection.');
                 return [];
             }
         },
         refetchInterval: 30000, // Refetch every 30 seconds
-        enabled: true
+        enabled: true,
+        retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     });
 
     // Fetch user's WonkaBars
@@ -316,6 +354,8 @@ export function useMeltyFi() {
             if (!currentAccount?.address) return [];
 
             try {
+                validateEnvironmentVariables();
+
                 const objects = await suiClient.getOwnedObjects({
                     owner: currentAccount.address,
                     filter: {
@@ -340,6 +380,7 @@ export function useMeltyFi() {
         },
         enabled: !!currentAccount?.address,
         refetchInterval: 15000,
+        retry: 2,
     });
 
     // Fetch user's ChocoChip balance
@@ -349,6 +390,8 @@ export function useMeltyFi() {
             if (!currentAccount?.address) return '0';
 
             try {
+                validateEnvironmentVariables();
+
                 const objects = await suiClient.getOwnedObjects({
                     owner: currentAccount.address,
                     filter: {
@@ -375,6 +418,7 @@ export function useMeltyFi() {
         },
         enabled: !!currentAccount?.address,
         refetchInterval: 15000,
+        retry: 2,
     });
 
     // Fetch user's SUI balance
@@ -396,6 +440,7 @@ export function useMeltyFi() {
         },
         enabled: !!currentAccount?.address,
         refetchInterval: 10000,
+        retry: 2,
     });
 
     // Calculate user stats
@@ -426,6 +471,12 @@ export function useMeltyFi() {
                 throw new Error('Wallet not connected');
             }
 
+            try {
+                validateEnvironmentVariables();
+            } catch (error) {
+                throw new Error(`Configuration error: ${error.message}`);
+            }
+
             // Validate parameters
             const price = parseFloat(params.wonkaBarPrice);
             const supply = params.maxSupply;
@@ -444,7 +495,6 @@ export function useMeltyFi() {
             const transaction = new Transaction();
 
             const wonkaBarPriceInMist = Math.floor(price * 1_000_000_000).toString();
-            const durationInMs = Math.floor(durationDays * 24 * 60 * 60 * 1000).toString();
 
             // Get the NFT object to determine its type
             const nftObject = await suiClient.getObject({
@@ -470,9 +520,9 @@ export function useMeltyFi() {
             if (nftObject.data.owner) {
                 if (typeof nftObject.data.owner === 'string') {
                     nftOwner = nftObject.data.owner;
-                } else if (nftObject.data.owner.AddressOwner) {
+                } else if ('AddressOwner' in nftObject.data.owner) {
                     nftOwner = nftObject.data.owner.AddressOwner;
-                } else if (nftObject.data.owner.ObjectOwner) {
+                } else if ('ObjectOwner' in nftObject.data.owner) {
                     nftOwner = nftObject.data.owner.ObjectOwner;
                 }
             }
@@ -516,17 +566,13 @@ export function useMeltyFi() {
                     transaction.pure.u64(expirationDate),     // expiration_date: u64
                     transaction.pure.u64(wonkaBarPriceInMist), // wonka_price: u64
                     transaction.pure.u64(supply),             // max_supply: u64
-                    transaction.object('0x6'),                // clock: &Clock (0x6 is the correct clock object ID)
+                    transaction.object(SUI_CLOCK_OBJECT_ID),   // clock: &Clock
                 ],
                 typeArguments: [nftType] // Specify the NFT type for the generic function
             });
 
             const result = await signAndExecuteTransaction({
-                transaction,
-                options: {
-                    showEffects: true,
-                    showEvents: true,
-                }
+                transaction
             });
 
             return result;
@@ -537,7 +583,7 @@ export function useMeltyFi() {
         },
         onError: (error) => {
             console.error('Error creating lottery:', error);
-            toast.error('Failed to create lottery');
+            toast.error(`Failed to create lottery: ${error.message}`);
         }
     });
 
@@ -552,8 +598,15 @@ export function useMeltyFi() {
                 throw new Error('Wallet not connected');
             }
 
+            try {
+                validateEnvironmentVariables();
+            } catch (error) {
+                throw new Error(`Configuration error: ${error.message}`);
+            }
+
             const transaction = new Transaction();
 
+            // Create payment coin from gas
             const [coin] = transaction.splitCoins(transaction.gas, [
                 transaction.pure.u64(params.totalCost)
             ]);
@@ -565,16 +618,12 @@ export function useMeltyFi() {
                     transaction.object(params.lotteryId),
                     coin,
                     transaction.pure.u64(params.quantity),
-                    transaction.object('0x8'),
+                    transaction.object(SUI_CLOCK_OBJECT_ID), // Use correct clock object ID
                 ]
             });
 
             const result = await signAndExecuteTransaction({
                 transaction,
-                options: {
-                    showEffects: true,
-                    showEvents: true,
-                }
             });
 
             return result;
@@ -582,14 +631,13 @@ export function useMeltyFi() {
         onSuccess: () => {
             toast.success('WonkaBars purchased successfully!');
             queryClient.invalidateQueries({ queryKey: ['lotteries'] });
-            queryClient.invalidateQueries({ queryKey: ['user-wonkabars'] });
-            queryClient.invalidateQueries({ queryKey: ['sui-balance'] });
-            queryClient.invalidateQueries({ queryKey: ['chocochip-balance'] });
+            queryClient.invalidateQueries({ queryKey: ['wonkaBars'] });
+            queryClient.invalidateQueries({ queryKey: ['suiBalance'] });
         },
         onError: (error) => {
             console.error('Error buying WonkaBars:', error);
-            toast.error('Failed to purchase WonkaBars');
-        }
+            toast.error(`Failed to buy WonkaBars: ${error.message}`);
+        },
     });
 
     // Redeem WonkaBars mutation
@@ -599,6 +647,12 @@ export function useMeltyFi() {
                 throw new Error('Wallet not connected');
             }
 
+            try {
+                validateEnvironmentVariables();
+            } catch (error) {
+                throw new Error(`Configuration error: ${error.message}`);
+            }
+
             const transaction = new Transaction();
 
             transaction.moveCall({
@@ -606,16 +660,12 @@ export function useMeltyFi() {
                 arguments: [
                     transaction.object(PROTOCOL_OBJECT_ID),
                     transaction.object(wonkaBarId),
-                    transaction.object('0x8'),
+                    transaction.object(SUI_RANDOM_OBJECT_ID), // Use correct random object ID
                 ]
             });
 
             const result = await signAndExecuteTransaction({
-                transaction,
-                options: {
-                    showEffects: true,
-                    showEvents: true,
-                }
+                transaction
             });
 
             return result;
@@ -628,7 +678,7 @@ export function useMeltyFi() {
         },
         onError: (error) => {
             console.error('Error redeeming WonkaBars:', error);
-            toast.error('Failed to redeem WonkaBars');
+            toast.error(`Failed to redeem WonkaBars: ${error.message}`);
         }
     });
 
